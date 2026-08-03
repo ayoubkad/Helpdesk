@@ -31,9 +31,11 @@ public class User {
 
     private String telephone;
 
+    @Column(nullable = false, updatable = false)
     private LocalDateTime dateCreation;
 
-    private boolean actif;
+    @Column(nullable = false)
+    private Boolean actif;
 
     @ManyToOne
     @JoinColumn(name = "role_id")
