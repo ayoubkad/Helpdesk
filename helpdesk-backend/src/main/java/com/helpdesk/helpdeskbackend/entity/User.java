@@ -2,6 +2,7 @@ package com.helpdesk.helpdeskbackend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -31,19 +32,31 @@ public class User {
 
     private String telephone;
 
-    @Column(nullable = false, updatable = false)
+    @Column(name = "date_creation", nullable = false, updatable = false)
     private LocalDateTime dateCreation;
 
     @Column(nullable = false)
     private Boolean actif;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id")
     private Role role;
 
+    public void modifierProfil(String nom, String prenom, String telephone) {
+        this.nom = nom;
+        this.prenom = prenom;
+        this.telephone = telephone;
+    }
+
+    public void desactiverCompte() {
+        this.actif = false;
+    }
+
     @PrePersist
-    public void onCreate(){
+    public void onCreate() {
         this.dateCreation = LocalDateTime.now();
-        this.actif = true;
+        if (this.actif == null) {
+            this.actif = true;
+        }
     }
 }
