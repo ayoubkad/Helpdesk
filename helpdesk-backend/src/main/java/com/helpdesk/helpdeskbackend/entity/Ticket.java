@@ -24,6 +24,7 @@ public class Ticket {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private StatutTicket status = StatutTicket.NOUVEAU;
@@ -66,7 +67,7 @@ public class Ticket {
 
     public void changerStatut(StatutTicket statut) {
         this.status = statut;
-        if (status == StatutTicket.RESOLU) {
+        if (statut == StatutTicket.RESOLU) {
             this.dateResolution = LocalDateTime.now();
         }
     }
