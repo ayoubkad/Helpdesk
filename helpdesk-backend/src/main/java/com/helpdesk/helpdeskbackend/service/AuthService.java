@@ -22,24 +22,22 @@ public class AuthService {
     @Autowired
     private JwtUtils jwtUtils;
 
-    // Inscription d'un utilisateur
     public String register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Erreur: Cet email est déjà utilisé !");
         }
 
         User user = new User();
-        user.setUsername(request.getUsername());
+        // Correction : Utilisation de setNom au lieu de setUsername
+        user.setNom(request.getNom()); 
+        user.setPrenom(request.getPrenom());
         user.setEmail(request.getEmail());
-        // Hachage du mot de passe avec BCrypt
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(request.getRole());
 
         userRepository.save(user);
         return "Utilisateur enregistré avec succès !";
     }
 
-    // Connexion d'un utilisateur
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé !"));
@@ -48,9 +46,11 @@ public class AuthService {
             throw new RuntimeException("Mot de passe incorrect !");
         }
 
-        // Génération du Token JWT
-        String token = jwtUtils.generateJwtToken(user.getEmail());
+        String token = jwtUtils.generateTokenFromUsername(user.getEmail());
+        
+        // Correction : getNom() au lieu de getLibelle()
+        String roleName = (user.getRole() != null) ? user.getRole().getNom() : "USER";
 
-        return new AuthResponse(token, user.getEmail(), user.getRole().name());
+        return new AuthResponse(token, user.getEmail(), roleName);
     }
 }
