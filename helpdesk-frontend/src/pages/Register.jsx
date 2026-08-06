@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import api from "../services/api";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -23,7 +24,8 @@ const Register = () => {
         [name]: ''
       });
     }
-  };
+  };µ
+
 
   const validateForm = () => {
     const newErrors = {};
@@ -52,16 +54,21 @@ const Register = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!validateForm()) {
-      return;
-    }
+    try{
+      const reponse=await api.post("/api/auth/register",{
+        name:formData.name,
+        email:formData.email,
+        password:formData.password,});
     
-    // Demain, tu remplaceras ceci par un appel Axios
-    console.log('Données d\'inscription :', formData);
-    // Ici tu feras : await axios.post('/api/register', formData)
+    
+      console.log(reponses.data);
+      alert("inscription résussie !");
+    }catch(error){
+      console.error(error);
+      alert("erreur lors de l'inscription");}
   };
 
   return (
