@@ -28,8 +28,7 @@ public class AuthService {
         }
 
         User user = new User();
-        // Correction : Utilisation de setNom au lieu de setUsername
-        user.setNom(request.getNom()); 
+        user.setNom(request.getNom());
         user.setPrenom(request.getPrenom());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -48,7 +47,6 @@ public class AuthService {
 
         String token = jwtUtils.generateTokenFromUsername(user.getEmail());
         
-        // Correction : getNom() au lieu de getLibelle()
         String roleName = (user.getRole() != null) ? user.getRole().getNom() : "USER";
 
         return new AuthResponse(token, user.getEmail(), roleName);
