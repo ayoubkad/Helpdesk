@@ -2,6 +2,7 @@ package com.helpdesk.helpdeskbackend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 @Entity
 @Table(name = "roles")
 @Getter
