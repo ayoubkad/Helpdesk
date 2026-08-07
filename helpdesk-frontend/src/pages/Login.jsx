@@ -1,10 +1,17 @@
 import React, { useState } from 'react';
+import api from '../services/api';
+import { useAuth } from '../Context/AuthContext';
+import { useNavigate, Link } from 'react-router-dom';
 
 const Login = () => {
+  const { login } = useAuth();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -14,11 +21,40 @@ const Login = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Demain, tu remplaceras ceci par un appel Axios
-    console.log('Données de connexion :', formData);
-    // Ici tu feras : await axios.post('/api/login', formData)
+    setError('');
+    setLoading(true);
+
+    try {
+      console.log('Tentative de connexion avec:', formData);
+      const response = await api.post('/api/auth/login', formData);
+      console.log('Réponse du serveur:', response.data);
+
+      if (response.data && response.data.token) {
+        login(response.data.token);
+        console.log('Token stocké avec succès');
+        navigate('/dashboard');
+      } else {
+        setError("Format de réponse inattendu du serveur");
+      }
+
+    } catch (error) {
+      console.error('Erreur de connexion:', error);
+      if (error.response) {
+        // Le serveur a répondu avec un statut d'erreur
+        setError(error.response.data?.message || "Email ou mot de passe incorrect");
+        console.log('Status:', error.response.status);
+        console.log('Data:', error.response.data);
+      } else if (error.request) {
+        // La requête a été faite mais pas de réponse
+        setError("Impossible de contacter le serveur. Vérifiez que le backend est démarré sur http://localhost:8080");
+      } else {
+        setError("Une erreur est survenue lors de la connexion");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -29,6 +65,12 @@ const Login = () => {
             Connexion
           </h2>
         </div>
+
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+            {error}
+          </div>
+        )}
         
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
@@ -70,10 +112,17 @@ const Login = () => {
           <div>
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+              disabled={loading}
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 disabled:opacity-50"
             >
-              Se connecter
+              {loading ? 'Connexion en cours...' : 'Se connecter'}
             </button>
+          </div>
+
+          <div className="text-center">
+            <Link to="/register" className="text-sm text-blue-600 hover:text-blue-500">
+              Pas encore de compte ? S'inscrire
+            </Link>
           </div>
         </form>
       </div>

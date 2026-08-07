@@ -1,17 +1,16 @@
-
-import Layout from "./components/Layout";
-import TicketList from "./components/TicketList";
-import CreateTicket from "./pages/CreateTicket";
-import Dashboard from "./pages/Dashboard";
+import React from 'react';
+import Login from './pages/Register';
+// import Register from './pages/Register';
+import './App.css';
+import Register from './pages/Register';
 
 function App() {
-  
-
   return (
-   
-    <Layout>
-        <CreateTicket/>
-    </Layout> 
+    <div className="min-h-screen bg-gray-50">
+      <Register />
+      {/* Pour tester Register, remplace <Login /> par <Register /> */}
+      {/* <Register /> */}
+    </div>
   );
 }
 
