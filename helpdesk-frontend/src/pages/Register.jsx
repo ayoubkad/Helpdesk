@@ -72,7 +72,7 @@ const Register = () => {
       });
     
     
-      console.log(reponses.data);
+      console.log(reponse.data);
       alert("inscription résussie !");
     }catch(error){
       console.error(error);
@@ -177,7 +177,7 @@ const Register = () => {
               <option value="">Sélectionnez un rôle</option>
               <option value="admin">Administrateur</option>
               <option value="user">Utilisateur</option>
-              <option value="moderateur">Modérateur</option>
+              <option value="technicien">technicien</option>
             </select>
             {errors.role && (
               <p className="mt-1 text-sm text-red-600">{errors.role}</p>
