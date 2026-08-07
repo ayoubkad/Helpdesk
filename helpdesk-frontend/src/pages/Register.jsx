@@ -68,7 +68,9 @@ const Register = () => {
         prenom:formData.prenom,
         email:formData.email,
         password:formData.password,
-        role:"USER"
+        role: {
+            nom: formData.role
+          }
       });
     
     
@@ -174,10 +176,9 @@ const Register = () => {
                 errors.role ? 'border-red-500' : 'border-gray-300'
               } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
             >
-              <option value="">Sélectionnez un rôle</option>
-              <option value="admin">Administrateur</option>
-              <option value="user">Utilisateur</option>
-              <option value="technicien">technicien</option>
+              <option value="ADMIN">Administrateur</option>
+              <option value="USER">Utilisateur</option>
+              <option value="TECHNICIAN">Technicien</option>
             </select>
             {errors.role && (
               <p className="mt-1 text-sm text-red-600">{errors.role}</p>
