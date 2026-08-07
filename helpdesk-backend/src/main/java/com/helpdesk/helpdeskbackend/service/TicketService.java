@@ -8,7 +8,7 @@ import com.helpdesk.helpdeskbackend.entity.StatutTicket;
 import com.helpdesk.helpdeskbackend.repository.TicketRepository;
 import com.helpdesk.helpdeskbackend.repository.UserRepository;
 import com.helpdesk.helpdeskbackend.repository.CategorieRepository;
-import org.jspecify.annotations.NonNull;
+import lombok.NonNull;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
