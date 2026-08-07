@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
+import api from '../services/api';
+import { useAuth } from '../Context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
+  const { login } = useAuth();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -14,12 +19,23 @@ const Login = () => {
     });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Demain, tu remplaceras ceci par un appel Axios
-    console.log('Données de connexion :', formData);
-    // Ici tu feras : await axios.post('/api/login', formData)
-  };
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+    const response = await api.post('/api/auth/login', formData);
+
+    // Enregistrer le JWT
+    login(response.data.token);
+
+    // Redirection vers le Dashboard
+    navigate('/dashboard');
+
+  } catch (error) {
+    console.error(error);
+    alert("Email ou mot de passe incorrect");
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
