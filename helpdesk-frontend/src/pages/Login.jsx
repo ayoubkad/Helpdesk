@@ -1,133 +1,312 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../Context/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
+import {
+    Mail,
+    Lock,
+    Eye,
+    EyeOff,
+    LogIn,
+    UserPlus,
+    AlertCircle,
+    ArrowRight,
+    Loader2,
+    ShieldCheck
+} from 'lucide-react';
 
 const Login = () => {
-  const { login } = useAuth();
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+    const { login } = useAuth();
+    const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
+    const [formData, setFormData] = useState({
+        email: '',
+        password: ''
     });
-  };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+    const [showPassword, setShowPassword] = useState(false);
+    const [errors, setErrors] = useState({});
+    const [touched, setTouched] = useState({});
+    const [loading, setLoading] = useState(false);
+    const [serverError, setServerError] = useState('');
 
-    try {
-      console.log('Tentative de connexion avec:', formData);
-      const response = await api.post('/api/auth/login', formData);
-      console.log('Réponse du serveur:', response.data);
+    const validateField = (name, value) => {
+        let error = '';
+        const trimmed = typeof value === 'string' ? value.trim() : value;
 
-      if (response.data && response.data.token) {
-        login(response.data.token);
-        console.log('Token stocké avec succès');
-        navigate('/dashboard');
-      } else {
-        setError("Format de réponse inattendu du serveur");
-      }
+        switch (name) {
+            case 'email':
+                if (!trimmed) {
+                    error = "L'adresse email est requise";
+                } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+                    error = "Format d'email invalide";
+                }
+                break;
+            case 'password':
+                if (!value) {
+                    error = 'Le mot de passe est requis';
+                }
+                break;
+            default:
+                break;
+        }
+        return error;
+    };
 
-    } catch (error) {
-      console.error('Erreur de connexion:', error);
-      if (error.response) {
-        // Le serveur a répondu avec un statut d'erreur
-        setError(error.response.data?.message || "Email ou mot de passe incorrect");
-        console.log('Status:', error.response.status);
-        console.log('Data:', error.response.data);
-      } else if (error.request) {
-        // La requête a été faite mais pas de réponse
-        setError("Impossible de contacter le serveur. Vérifiez que le backend est démarré sur http://localhost:8080");
-      } else {
-        setError("Une erreur est survenue lors de la connexion");
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        const updated = {
+            ...formData,
+            [name]: value
+        };
+        setFormData(updated);
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-lg">
-        <div>
-          <h2 className="text-center text-3xl font-extrabold text-gray-900">
-            Connexion
-          </h2>
+        // Clear error banner on input change
+        if (serverError) {
+            setServerError('');
+        }
+
+        // Live validation if already touched
+        if (touched[name]) {
+            setErrors((prev) => ({
+                ...prev,
+                [name]: validateField(name, value)
+            }));
+        }
+    };
+
+    const handleBlur = (e) => {
+        const { name, value } = e.target;
+        setTouched((prev) => ({ ...prev, [name]: true }));
+        setErrors((prev) => ({
+            ...prev,
+            [name]: validateField(name, value)
+        }));
+    };
+
+    const validateForm = () => {
+        const newErrors = {};
+        Object.keys(formData).forEach((key) => {
+            const err = validateField(key, formData[key]);
+            if (err) newErrors[key] = err;
+        });
+
+        setErrors(newErrors);
+        setTouched({
+            email: true,
+            password: true
+        });
+
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setServerError('');
+
+        if (!validateForm()) {
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            console.log('Tentative de connexion avec:', formData.email);
+            const response = await api.post('/api/auth/login', {
+                email: formData.email.trim(),
+                password: formData.password
+            });
+
+            console.log('Réponse du serveur:', response.data);
+
+            if (response.data && response.data.token) {
+                login(response.data);
+                console.log('Token stocké avec succès');
+                navigate('/dashboard');
+            } else {
+                setServerError("Format de réponse inattendu du serveur");
+            }
+
+        } catch (error) {
+            console.error('Erreur de connexion:', error);
+            if (error.response) {
+                setServerError(error.response.data?.message || "Email ou mot de passe incorrect");
+            } else if (error.request) {
+                setServerError("Impossible de contacter le serveur backend. Vérifiez qu'il est bien démarré.");
+            } else {
+                setServerError("Une erreur est survenue lors de la connexion.");
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/40 py-10 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+            <div className="max-w-md w-full">
+                
+                {/* Main Card */}
+                <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 overflow-hidden transition-all duration-300">
+                    
+                    {/* Header */}
+                    <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-indigo-700 px-6 sm:px-10 py-8 text-white text-center relative overflow-hidden">
+                        {/* Decorative background glows */}
+                        <div className="absolute -top-12 -right-12 w-36 h-36 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+                        <div className="absolute -bottom-12 -left-12 w-36 h-36 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+
+                        <div className="relative z-10 flex flex-col items-center">
+                            <div className="w-14 h-14 bg-white/15 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-inner mb-3 border border-white/20">
+                                <LogIn className="w-7 h-7 text-white stroke-[2.2]" />
+                            </div>
+                            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+                                Connexion
+                            </h1>
+                            <p className="mt-1.5 text-blue-100 text-sm max-w-xs">
+                                Accédez à votre espace Helpdesk pour suivre et gérer vos tickets.
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Form Container */}
+                    <div className="p-6 sm:p-8">
+                        
+                        {/* Error Alert Banner */}
+                        {serverError && (
+                            <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3 text-red-800 animate-fadeIn">
+                                <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                                <div className="text-sm font-medium">{serverError}</div>
+                            </div>
+                        )}
+
+                        <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+                            
+                            {/* Email */}
+                            <div>
+                                <label htmlFor="email" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                                    Adresse Email <span className="text-red-500">*</span>
+                                </label>
+                                <div className="relative rounded-xl shadow-sm">
+                                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                        <Mail className="w-4 h-4" />
+                                    </div>
+                                    <input
+                                        id="email"
+                                        name="email"
+                                        type="email"
+                                        autoComplete="email"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        onBlur={handleBlur}
+                                        placeholder="votre@email.com"
+                                        className={`block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm rounded-xl border bg-slate-50/50 transition-all duration-200 outline-none text-slate-900 placeholder:text-slate-400 ${
+                                            errors.email && touched.email
+                                                ? 'border-red-400 bg-red-50/30 focus:border-red-500 focus:ring-4 focus:ring-red-500/10'
+                                                : touched.email && !errors.email && formData.email
+                                                ? 'border-emerald-400 bg-emerald-50/20 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10'
+                                                : 'border-slate-200 focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10'
+                                        }`}
+                                    />
+                                </div>
+                                {errors.email && touched.email && (
+                                    <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+                                        <AlertCircle className="w-3.5 h-3.5" />
+                                        {errors.email}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Mot de passe */}
+                            <div>
+                                <label htmlFor="password" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                                    Mot de passe <span className="text-red-500">*</span>
+                                </label>
+                                <div className="relative rounded-xl shadow-sm">
+                                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                        <Lock className="w-4 h-4" />
+                                    </div>
+                                    <input
+                                        id="password"
+                                        name="password"
+                                        type={showPassword ? 'text' : 'password'}
+                                        autoComplete="current-password"
+                                        value={formData.password}
+                                        onChange={handleChange}
+                                        onBlur={handleBlur}
+                                        placeholder="Votre mot de passe"
+                                        className={`block w-full pl-10 pr-10 py-2.5 sm:py-3 text-sm rounded-xl border bg-slate-50/50 transition-all duration-200 outline-none text-slate-900 placeholder:text-slate-400 ${
+                                            errors.password && touched.password
+                                                ? 'border-red-400 bg-red-50/30 focus:border-red-500 focus:ring-4 focus:ring-red-500/10'
+                                                : touched.password && !errors.password && formData.password
+                                                ? 'border-emerald-400 bg-emerald-50/20 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10'
+                                                : 'border-slate-200 focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10'
+                                        }`}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none"
+                                        aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                                    >
+                                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </button>
+                                </div>
+                                {errors.password && touched.password && (
+                                    <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+                                        <AlertCircle className="w-3.5 h-3.5" />
+                                        {errors.password}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Submit Button */}
+                            <div className="pt-2">
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="w-full relative py-3.5 px-6 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-indigo-700 hover:from-blue-700 hover:via-indigo-700 hover:to-indigo-800 shadow-lg shadow-indigo-500/25 active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
+                                >
+                                    {loading ? (
+                                        <>
+                                            <Loader2 className="w-5 h-5 animate-spin text-white" />
+                                            <span>Connexion en cours...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span>Se connecter</span>
+                                            <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+
+                        </form>
+
+                        {/* Footer: Dedicated Register Button & Link */}
+                        <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <p className="text-sm text-slate-600">
+                                Pas encore de compte ?
+                            </p>
+                            <Link
+                                to="/register"
+                                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100/80 rounded-xl transition-all duration-150 border border-indigo-100"
+                            >
+                                <UserPlus className="w-4 h-4" />
+                                <span>S'inscrire</span>
+                            </Link>
+                        </div>
+
+                    </div>
+                </div>
+
+                {/* Subtitle footer note */}
+                <div className="text-center mt-6 text-xs text-slate-400 flex items-center justify-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-slate-400" />
+                    <span>Plateforme Helpdesk Sécurisée &bull; Support & Assistance</span>
+                </div>
+
+            </div>
         </div>
-
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
-            {error}
-          </div>
-        )}
-        
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={formData.email}
-                onChange={handleChange}
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="votre@email.com"
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Mot de passe
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={formData.password}
-                onChange={handleChange}
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Votre mot de passe"
-              />
-            </div>
-          </div>
-
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 disabled:opacity-50"
-            >
-              {loading ? 'Connexion en cours...' : 'Se connecter'}
-            </button>
-          </div>
-
-          <div className="text-center">
-            <Link to="/register" className="text-sm text-blue-600 hover:text-blue-500">
-              Pas encore de compte ? S'inscrire
-            </Link>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default Login;

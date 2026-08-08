@@ -60,8 +60,8 @@ public class TicketService {
                 .stream()
                 .map(this::mapToDTO)
                 .toList();
-
     }
+
     @Transactional(readOnly = true)
     public List<TicketDTO> listerTicketsParUtilisateur(Long userId){
         return ticketRepository.findByCreateurId(userId)

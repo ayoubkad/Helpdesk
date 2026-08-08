@@ -1,16 +1,47 @@
 import React from 'react';
-import Login from './pages/Register';
-// import Register from './pages/Register';
-import './App.css';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Register from './pages/Register';
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+import CreateTicket from './pages/CreateTicket';
+import ProtectedRoute from './components/ProtectedRoute';
+import './App.css';
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Register />
-      {/* Pour tester Register, remplace <Login /> par <Register /> */}
-      {/* <Register /> */}
-    </div>
+    <BrowserRouter>
+      <div className="min-h-screen bg-slate-50">
+        <Routes>
+          {/* Route publique d'inscription */}
+          <Route path="/register" element={<Register />} />
+          
+          {/* Route publique de connexion */}
+          <Route path="/login" element={<Login />} />
+          
+          {/* Routes protégées */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <CreateTicket />
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Redirection par défaut */}
+          <Route path="/" element={<Navigate to="/register" replace />} />
+          <Route path="*" element={<Navigate to="/register" replace />} />
+        </Routes>
+      </div>
+    </BrowserRouter>
   );
 }
 
