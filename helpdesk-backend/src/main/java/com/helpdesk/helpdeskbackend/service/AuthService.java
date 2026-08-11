@@ -34,14 +34,6 @@ public class AuthService {
         Role role = roleRepository.findByNom(nomRole)
                 .orElseThrow(() -> new RuntimeException("Erreur: Le rôle '" + nomRole + "' n'existe pas en BDD !"));
 
-//        User user = new User();
-//        user.setNom(request.getNom());
-//        user.setPrenom(request.getPrenom());
-//        user.setEmail(request.getEmail());
-//        user.setTelephone(request.getTelephone());
-//        user.setRole(role);
-//        user.setPassword(passwordEncoder.encode(request.getPassword()));
-
         User user = User.builder()
                 .nom(request.getNom())
                 .prenom(request.getPrenom())

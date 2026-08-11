@@ -139,5 +139,4 @@ public class TicketService {
                 .categorieId(ticket.getCategorie() != null ? ticket.getCategorie().getId() : null)
                 .build();
     }
-
 }
