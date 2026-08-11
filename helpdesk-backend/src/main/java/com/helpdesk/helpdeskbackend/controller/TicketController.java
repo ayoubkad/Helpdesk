@@ -1,0 +1,67 @@
+package com.helpdesk.helpdeskbackend.controller;
+
+import com.helpdesk.helpdeskbackend.dto.TicketDTO;
+import com.helpdesk.helpdeskbackend.entity.StatutTicket;
+import com.helpdesk.helpdeskbackend.service.TicketService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/tickets")
+@RequiredArgsConstructor
+@CrossOrigin(origins = "*")
+public class TicketController {
+
+    private final TicketService ticketService;
+
+    @PostMapping
+    public ResponseEntity<TicketDTO> creerTicket(
+            @Valid @RequestBody TicketDTO ticketDTO,
+            @RequestParam Long createurId) {
+        return new ResponseEntity<>(ticketService.creerTicket(ticketDTO, createurId), HttpStatus.CREATED);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<TicketDTO>> listerTousLesTickets() {
+        return ResponseEntity.ok(ticketService.listTousTickets());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<TicketDTO> getTicketById(@PathVariable Long id) {
+        return ResponseEntity.ok(ticketService.getTicketById(id));
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<TicketDTO>> listerTicketsParUtilisateur(@PathVariable Long userId) {
+        return ResponseEntity.ok(ticketService.listerTicketsParUtilisateur(userId));
+    }
+
+    @PutMapping("/{id}/assigner")
+    public ResponseEntity<TicketDTO> assignerTechnicien(
+            @PathVariable Long id,
+            @RequestParam Long techId) {
+        return ResponseEntity.ok(ticketService.assignerTechnicien(id, techId));
+    }
+
+    @PutMapping("/{id}/statut")
+    public ResponseEntity<TicketDTO> changerStatut(
+            @PathVariable Long id,
+            @RequestParam StatutTicket statutTicket) {
+        return ResponseEntity.ok(ticketService.changerStatut(id, statutTicket));
+    }
+
+    @PutMapping("/{id}/cloturer")
+    public ResponseEntity<TicketDTO> cloturerTicket(@PathVariable Long id) {
+        return ResponseEntity.ok(ticketService.cloturerTicket(id));
+    }
+
+    @PutMapping("/{id}/rouvrir")
+    public ResponseEntity<TicketDTO> rouvrirTicket(@PathVariable Long id) {
+        return ResponseEntity.ok(ticketService.rouvrirTicket(id));
+    }
+}
