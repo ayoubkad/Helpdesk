@@ -1,18 +1,19 @@
 server:
-  port: 8081
+  port: ${SERVER_PORT:8081}
 
 spring:
   datasource:
-    url: jdbc:mysql://localhost:8889/helpdesk_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
-    username: root
-    password: root
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DB_URL:jdbc:postgresql://aws-0-eu-central-1.pooler.supabase.com:5432/postgres?sslmode=require}
+    username: ${DB_USERNAME:postgres.oqxpwrfqdaprwurixuoi}
+    password: ${DB_PASSWORD:huwse6-Dejtar-hixjym}
+    driver-class-name: ${DB_DRIVER:org.postgresql.Driver}
 
   jpa:
+    database-platform: ${JPA_DATABASE_PLATFORM:org.hibernate.dialect.PostgreSQLDialect}
     hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.MySQLDialect
+      ddl-auto: ${HIBERNATE_DDL_AUTO:update}
+    show-sql: ${SHOW_SQL:true}
+
+app:
+  jwtSecret: ${JWT_SECRET:DefaultSecretKeyWhichShouldBeLongEnoughForHS512AlgorithmSecurityPurpose}
+  jwtExpirationMs: ${JWT_EXPIRATION_MS:86400000}

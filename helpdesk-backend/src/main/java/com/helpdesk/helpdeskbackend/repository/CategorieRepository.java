@@ -7,4 +7,8 @@ import java.util.Optional;
 
 public interface CategorieRepository extends JpaRepository<Categorie, Long> {
     Optional<Categorie> findAllByNom(String nom);
+
+    Optional<Categorie> findByNom(String nom);
+
+    boolean existsByNomIgnoreCase(String nom);
 }
