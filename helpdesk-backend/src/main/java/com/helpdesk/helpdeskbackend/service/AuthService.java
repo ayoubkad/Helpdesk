@@ -29,10 +29,12 @@ public class AuthService {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Erreur: Cet email est déjà utilisé !");
         }
-
-        String nomRole = request.getRole().getNom().toUpperCase();
-        Role role = roleRepository.findByNom(nomRole)
-                .orElseThrow(() -> new RuntimeException("Erreur: Le rôle '" + nomRole + "' n'existe pas en BDD !"));
+        //Correction de sécurité (Semaine 2 - Priorité 1) :
+        // le rôle n'est JAMAIS pris depuis la requête envoyée par le client.
+        // Tout compte créé via /api/auth/register est forcément un USER.
+        // Les comptes TECHNICIEN et ADMIN ne sont créés que par DataInitializer.
+        Role role = roleRepository.findByNom("USER")
+                .orElseThrow(() -> new RuntimeException("Erreur: Le rôle 'USER' n'existe pas en BDD !"));
 
 //        User user = new User();
 //        user.setNom(request.getNom());
