@@ -37,8 +37,10 @@ function Dashboard() {
   const [formData, setFormData] = useState({
     titre: "",
     description: "",
-    priorite: "MOYENNE"
+    priorite: "MOYENNE",
+    categorieId: ""
   });
+  const [categories, setCategories] = useState([]);
   const [formErrors, setFormErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState({ type: null, message: "" });
@@ -75,9 +77,18 @@ function Dashboard() {
       setLoading(false);
     }
   };
+  const fetchCategories = async () => {
+  try {
+    const response = await api.get("/api/categories");
+    setCategories(response.data);
+  } catch (error) {
+    console.error("Erreur lors du chargement des catégories :", error);
+  }
+  };
 
   useEffect(() => {
     fetchTickets();
+    fetchCategories();
   }, []);
 
   // Validation
@@ -97,6 +108,9 @@ function Dashboard() {
 
     if (!formData.priorite) {
       errors.priorite = "Veuillez choisir une priorité";
+    }
+    if (!formData.categorieId) {
+      errors.categorieId = "Veuillez choisir une catégorie";
     }
 
     setFormErrors(errors);
@@ -120,7 +134,8 @@ function Dashboard() {
         {
           titre: formData.titre.trim(),
           description: formData.description.trim(),
-          priorite: formData.priorite
+          priorite: formData.priorite,
+          categorieId: formData.categorieId
         }
       );
 
@@ -138,7 +153,8 @@ function Dashboard() {
       setFormData({
         titre: "",
         description: "",
-        priorite: "MOYENNE"
+        priorite: "MOYENNE",
+        categorieId: ""
       });
       setFormErrors({});
 
@@ -542,6 +558,40 @@ function Dashboard() {
                       );
                     })}
                   </div>
+                </div>
+                {/* Catégorie */}
+                <div>
+                <label
+                    htmlFor="modal-categorie"
+                    className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
+                >
+                    Catégorie <span className="text-red-500">*</span>
+                </label>
+
+                <select
+                    id="modal-categorie"
+                    value={formData.categorieId}
+                    onChange={(e) =>
+                    setFormData({
+                        ...formData,
+                        categorieId: e.target.value
+                    })
+                    }
+                    className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50/50 outline-none text-slate-900 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500/20"
+                >
+                    <option value="">Choisir une catégorie</option>
+
+                    {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                        {category.nom}
+                    </option>
+                    ))}
+                </select>
+                {formErrors.categorieId && (
+                    <p className="mt-1 text-xs text-red-600">
+                        {formErrors.categorieId}
+                    </p>
+                )}
                 </div>
 
                 {/* Modal Buttons */}
