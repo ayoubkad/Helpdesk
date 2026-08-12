@@ -53,8 +53,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/categories/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/categories/**").hasRole("ADMIN")   // 👈 يبحث تلقائياً عن ROLE_ADMIN
-                        .requestMatchers(HttpMethod.DELETE, "/api/categories/**").hasRole("ADMIN") // 👈 يبحث تلقائياً عن ROLE_ADMIN
+                        .requestMatchers(HttpMethod.POST, "/api/categories/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/categories/**").hasRole("ADMIN")
                         .requestMatchers("/api/tickets/**").authenticated()
                         .anyRequest().authenticated()
                 );;
