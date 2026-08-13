@@ -57,7 +57,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/categories/**").hasRole("ADMIN")
                         .requestMatchers("/api/tickets/**").authenticated()
                         .anyRequest().authenticated()
-                );;
+                );
 
         // Ajout du filtre JWT avant le filtre d'authentification par défaut
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);

@@ -65,9 +65,13 @@ public class Ticket {
         }
     }
 
-    public void changerStatut(StatutTicket statut) {
-        this.status = statut;
-        if (statut == StatutTicket.RESOLU) {
+    public void changerStatut(StatutTicket nouveauStatut) {
+        this.status = nouveauStatut;
+        this.dateModification = LocalDateTime.now();
+
+        if (nouveauStatut == StatutTicket.CLOTURE) {
+            this.dateCloture = LocalDateTime.now();
+        } else if (nouveauStatut == StatutTicket.RESOLU) {
             this.dateResolution = LocalDateTime.now();
         }
     }

@@ -6,6 +6,7 @@ import com.helpdesk.helpdeskbackend.repository.CommentaireRepository;
 import com.helpdesk.helpdeskbackend.repository.TicketRepository;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import com.helpdesk.helpdeskbackend.dto.CommentaireDTO;
 import com.helpdesk.helpdeskbackend.entity.Commentaire;
@@ -23,11 +24,15 @@ public class CommentaireService {
             throw new RuntimeException("Erreur: Le contenu du commentaire ne peut pas être vide !");
         }
 
+        if(user.getRole().getNom().equalsIgnoreCase("USER")){
+            throw new RuntimeException("Accès refusé : Les utilisateurs simples ne peuvent pas créer de notes internes !");
+        }
+
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new RuntimeException(" Ticket avec l'ID " + ticketId + " n'est existe pas"));
 
         Commentaire commentaire = Commentaire.builder()
-                .contenu(contenu)
+                .contenu(contenu.trim())
                 .auteur(user)
                 .estInterne(estInterne)
                 .ticket(ticket)
