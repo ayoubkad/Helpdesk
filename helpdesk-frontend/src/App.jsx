@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard';
 import CreateTicket from './pages/CreateTicket';
 import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
+import TicketDetails from './pages/TicketDetails';
 
 function App() {
   return (
@@ -28,6 +29,14 @@ function App() {
             }
           />
           <Route
+          path="/tickets/:ticketId"
+          element={
+            <ProtectedRoute>
+              <TicketDetails />
+            </ProtectedRoute>
+          }
+        />
+          <Route
             path="/"
             element={
               <ProtectedRoute>
@@ -37,7 +46,7 @@ function App() {
           />
           
           {/* Redirection par défaut */}
-          <Route path="/" element={<Navigate to="/register" replace />} />
+          
           <Route path="*" element={<Navigate to="/register" replace />} />
         </Routes>
       </div>
