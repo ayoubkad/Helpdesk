@@ -135,7 +135,7 @@ function Dashboard() {
           titre: formData.titre.trim(),
           description: formData.description.trim(),
           priorite: formData.priorite,
-          categorieId: formData.categorieId
+          categorieId: formData.categorieId ? Number(formData.categorieId) : null
         }
       );
 

@@ -7,6 +7,12 @@ spring:
     username: ${DB_USERNAME:postgres.oqxpwrfqdaprwurixuoi}
     password: ${DB_PASSWORD:huwse6-Dejtar-hixjym}
     driver-class-name: ${DB_DRIVER:org.postgresql.Driver}
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 20000
+      idle-timeout: 300000
+      max-lifetime: 600000
 
   jpa:
     database-platform: ${JPA_DATABASE_PLATFORM:org.hibernate.dialect.PostgreSQLDialect}

@@ -86,6 +86,12 @@ function TicketCard({ ticket }) {
           <span className="text-xs font-bold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">
             #{ticket.id || "0"}
           </span>
+          {(ticket.categorieNom || ticket.categorie?.nom) && (
+            <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200/60 flex items-center gap-1">
+              <Layers className="w-3.5 h-3.5 text-indigo-500" />
+              {ticket.categorieNom || ticket.categorie?.nom}
+            </span>
+          )}
           <span
             className={`text-xs font-bold px-2.5 py-1 rounded-lg border flex items-center gap-1 ${statusBadge.className}`}
           >

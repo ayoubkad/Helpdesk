@@ -6,7 +6,7 @@ import Dashboard from './pages/Dashboard';
 import CreateTicket from './pages/CreateTicket';
 import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
-import TicketDetails from './pages/TicketDetails';
+import TicketDetailsModal from "./components/TicketDetailsModal";
 
 function App() {
   return (
@@ -32,7 +32,7 @@ function App() {
           path="/tickets/:ticketId"
           element={
             <ProtectedRoute>
-              <TicketDetails />
+              <TicketDetailsModal />
             </ProtectedRoute>
           }
         />
