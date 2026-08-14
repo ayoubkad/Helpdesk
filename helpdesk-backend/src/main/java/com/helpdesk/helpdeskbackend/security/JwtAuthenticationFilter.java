@@ -19,8 +19,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private JwtUtils jwtUtils;
 
+    // Nécessaire pour charger les rôles réels (ROLE_USER / ROLE_TECHNICIEN / ROLE_ADMIN)
+    // Sans ça, @PreAuthorize / hasAnyRole(...) ne verra jamais aucune autorité.
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
+    
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
