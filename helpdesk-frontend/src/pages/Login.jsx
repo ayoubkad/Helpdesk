@@ -119,11 +119,19 @@ const Login = () => {
 
             console.log('Réponse du serveur:', response.data);
 
-            if (response.data && response.data.token) {
-                login(response.data);
-                console.log('Token stocké avec succès');
-                navigate('/dashboard');
+           if (response.data && response.data.token) {
+            login(response.data);
+
+            const role = response.data.role;
+
+            if (role === "TECHNICIEN") {
+                navigate("/technician");
+            } else if (role === "ADMIN") {
+                navigate("/admin");
             } else {
+                navigate("/dashboard");
+            }
+        } else {
                 setServerError("Format de réponse inattendu du serveur");
             }
 

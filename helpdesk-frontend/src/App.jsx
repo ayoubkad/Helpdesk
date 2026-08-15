@@ -1,10 +1,14 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+
 import Register from './pages/Register';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import CreateTicket from './pages/CreateTicket';
+import TechnicianDashboard from './pages/TechnicianDashboard';
+
 import ProtectedRoute from './components/ProtectedRoute';
+
 import './App.css';
 
 function App() {
@@ -12,33 +16,44 @@ function App() {
     <BrowserRouter>
       <div className="min-h-screen bg-slate-50">
         <Routes>
-          {/* Route publique d'inscription */}
+
+          {/* Routes publiques */}
           <Route path="/register" element={<Register />} />
-          
-          {/* Route publique de connexion */}
           <Route path="/login" element={<Login />} />
-          
-          {/* Routes protégées */}
+
+          {/* Dashboard USER */}
           <Route
             path="/dashboard"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={["USER"]}>
                 <Dashboard />
               </ProtectedRoute>
             }
           />
+
+          {/* Dashboard TECHNICIEN */}
           <Route
-            path="/"
+            path="/technician"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={["TECHNICIEN"]}>
+                <TechnicianDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Création de ticket - USER */}
+          <Route
+            path="/create-ticket"
+            element={
+              <ProtectedRoute allowedRoles={["USER"]}>
                 <CreateTicket />
               </ProtectedRoute>
             }
           />
-          
-          {/* Redirection par défaut */}
-          <Route path="/" element={<Navigate to="/register" replace />} />
-          <Route path="*" element={<Navigate to="/register" replace />} />
+
+          {/* Route inconnue */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
+
         </Routes>
       </div>
     </BrowserRouter>
