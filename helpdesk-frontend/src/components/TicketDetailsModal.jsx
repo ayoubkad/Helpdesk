@@ -1,12 +1,31 @@
 import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./TicketDetailsModal.css";
 
 const API_URL = "http://localhost:8081/api";
 
-const TicketDetailsModal = ({ ticketId, isOpen, onClose, onUpdate }) => {
+const TicketDetailsModal = ({ ticketId: propTicketId, isOpen: propIsOpen, onClose: propOnClose, onUpdate }) => {
+  const params = useParams();
+  const navigate = useNavigate();
+
+  const ticketId = propTicketId || params.ticketId;
+  const isOpen = propIsOpen !== undefined ? propIsOpen : true;
+
+  const handleClose = () => {
+    if (propOnClose) {
+      propOnClose();
+    } else {
+      if (window.history.length > 1) {
+        navigate(-1);
+      } else {
+        navigate("/dashboard");
+      }
+    }
+  };
   const [ticket, setTicket] = useState(null);
   const [comments, setComments] = useState([]);
+  const [categories, setCategories] = useState([]);
 
   const [loading, setLoading] = useState(false);
   const [commentsLoading, setCommentsLoading] = useState(false);
@@ -97,7 +116,21 @@ const TicketDetailsModal = ({ ticketId, isOpen, onClose, onUpdate }) => {
       }
     };
 
+    const fetchCategories = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+        const res = await axios.get(`${API_URL}/categories`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setCategories(res.data || []);
+      } catch (err) {
+        console.error("Erreur chargement catégories:", err);
+      }
+    };
+
     getRole();
+    fetchCategories();
   }, []);
 
   // Charger les données du ticket et des commentaires à l'ouverture
@@ -165,8 +198,8 @@ const TicketDetailsModal = ({ ticketId, isOpen, onClose, onUpdate }) => {
       await axios.post(
         `${API_URL}/tickets/${ticketId}/comments`,
         {
-          content: newComment.trim(),
-          isInternal: isInternal,
+          contenu: newComment.trim(),
+          estInterne: isInternal,
         },
         {
           headers: {
@@ -297,14 +330,26 @@ const TicketDetailsModal = ({ ticketId, isOpen, onClose, onUpdate }) => {
     return statusMap[status] || status;
   };
 
+  const getCategoryName = () => {
+    if (!ticket) return "Non définie";
+    if (ticket.categorieNom) return ticket.categorieNom;
+    if (ticket.categorie?.nom) return ticket.categorie.nom;
+    if (ticket.categorieId) {
+      const found = categories.find((c) => String(c.id) === String(ticket.categorieId));
+      if (found?.nom) return found.nom;
+      return `Catégorie #${ticket.categorieId}`;
+    }
+    return "Non définie";
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={handleClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>Ticket #{ticket?.id || ticketId}</h2>
-          <button className="close-btn" onClick={onClose}>
+          <button className="close-btn" onClick={handleClose}>
             ✕
           </button>
         </div>
@@ -338,7 +383,7 @@ const TicketDetailsModal = ({ ticketId, isOpen, onClose, onUpdate }) => {
                 <div className="metadata-item">
                   <span className="metadata-label">CATÉGORIE</span>
                   <span className="metadata-value">
-                    {ticket.categorie?.nom || "Non définie"}
+                    {getCategoryName()}
                   </span>
                 </div>
 
@@ -449,7 +494,7 @@ const TicketDetailsModal = ({ ticketId, isOpen, onClose, onUpdate }) => {
                   comments.map((comment) => (
                     <div
                       key={comment.id}
-                      className={`comment-item ${comment.isInternal || comment.internal ? "internal" : ""}`}
+                      className={`comment-item ${comment.estInterne || comment.isInternal || comment.internal ? "internal" : ""}`}
                     >
                       <div className="comment-header">
                         <span className="comment-author">
@@ -458,11 +503,11 @@ const TicketDetailsModal = ({ ticketId, isOpen, onClose, onUpdate }) => {
                         <span className="comment-date">
                           {formatDate(comment.datePublication || comment.dateCreation)}
                         </span>
-                        {(comment.isInternal || comment.internal) && (
+                        {(comment.estInterne || comment.isInternal || comment.internal) && (
                           <span className="internal-badge">🔒 Note Interne</span>
                         )}
                       </div>
-                      <p className="comment-content">{comment.content}</p>
+                      <p className="comment-content">{comment.contenu || comment.content}</p>
                     </div>
                   ))}
 
@@ -502,7 +547,7 @@ const TicketDetailsModal = ({ ticketId, isOpen, onClose, onUpdate }) => {
         </div>
 
         <div className="modal-footer">
-          <button className="btn-close-modal" onClick={onClose}>
+          <button className="btn-close-modal" onClick={handleClose}>
             Fermer
           </button>
         </div>

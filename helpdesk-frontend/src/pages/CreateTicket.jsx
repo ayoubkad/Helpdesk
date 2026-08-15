@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../Context/AuthContext";
@@ -22,8 +22,22 @@ function CreateTicket() {
   const [formData, setFormData] = useState({
     titre: "",
     description: "",
-    priorite: "MOYENNE"
+    priorite: "MOYENNE",
+    categorieId: ""
   });
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await api.get("/api/categories");
+        setCategories(response.data || []);
+      } catch (error) {
+        console.error("Erreur lors du chargement des catégories:", error);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
@@ -155,7 +169,8 @@ function CreateTicket() {
         {
           titre: formData.titre.trim(),
           description: formData.description.trim(),
-          priorite: formData.priorite
+          priorite: formData.priorite,
+          categorieId: formData.categorieId ? Number(formData.categorieId) : null
         }
       );
 
@@ -170,7 +185,8 @@ function CreateTicket() {
       setFormData({
         titre: "",
         description: "",
-        priorite: "MOYENNE"
+        priorite: "MOYENNE",
+        categorieId: ""
       });
       setTouched({});
       setErrors({});
@@ -295,6 +311,31 @@ function CreateTicket() {
                     {errors.titre}
                   </p>
                 )}
+              </div>
+              {/* Catégorie */}
+              <div>
+                <label htmlFor="categorieId" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Catégorie
+                </label>
+                <div className="relative rounded-xl shadow-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <Layers className="w-4 h-4" />
+                  </div>
+                  <select
+                    id="categorieId"
+                    name="categorieId"
+                    value={formData.categorieId}
+                    onChange={handleChange}
+                    className="block w-full pl-10 pr-8 py-2.5 sm:py-3 text-sm rounded-xl border border-slate-200 bg-slate-50/50 focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all duration-200 outline-none text-slate-900"
+                  >
+                    <option value="">-- Sélectionner une catégorie --</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.nom}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               {/* Description */}

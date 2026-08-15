@@ -7,6 +7,7 @@ const API_URL = "http://localhost:8081/api";
 
 const TechnicianDashboard = () => {
   const [tickets, setTickets] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedTicketId, setSelectedTicketId] = useState(null);
@@ -16,6 +17,18 @@ const TechnicianDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const userEmail = localStorage.getItem("userEmail") || "technicien@gmail.com";
+
+  // Récupérer le nom de la catégorie de manière robuste
+  const getTicketCategoryName = (ticket) => {
+    if (ticket.categorieNom) return ticket.categorieNom;
+    if (ticket.categorie?.nom) return ticket.categorie.nom;
+    if (ticket.categorieId) {
+      const found = categories.find((c) => String(c.id) === String(ticket.categorieId));
+      if (found?.nom) return found.nom;
+      return `Catégorie #${ticket.categorieId}`;
+    }
+    return "Général";
+  };
 
   // Récupérer la valeur du statut quelle que soit sa clé dans l'objet JSON
   const getTicketStatus = (ticket) => {
@@ -45,6 +58,19 @@ const TechnicianDashboard = () => {
     return classMap[rawStatus] || "badge-default";
   };
 
+  const fetchCategories = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      const response = await axios.get(`${API_URL}/categories`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setCategories(response.data || []);
+    } catch (err) {
+      console.error("Erreur chargement catégories :", err);
+    }
+  };
+
   const fetchTickets = async () => {
     setLoading(true);
     try {
@@ -67,6 +93,7 @@ const TechnicianDashboard = () => {
 
   useEffect(() => {
     fetchTickets();
+    fetchCategories();
   }, []);
 
   const handleOpenModal = (id) => {
@@ -175,7 +202,7 @@ const TechnicianDashboard = () => {
               <div className="ticket-card-header">
                 <span className="ticket-id">#{String(ticket.id).padStart(4, "0")}</span>
                 <span className="ticket-category">
-                  📁 {ticket.categorie?.nom || "Général"}
+                  📁 {getTicketCategoryName(ticket)}
                 </span>
                 <span className={`status-pill ${getStatusBadgeClass(ticket)}`}>
                   {getStatusLabel(ticket)}

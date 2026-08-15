@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import React from "react";
 import {
   Clock,
@@ -57,7 +58,7 @@ function TicketCard({ ticket }) {
         };
     }
   };
-
+  const navigate = useNavigate();
   const priorityBadge = getPriorityBadge(ticket.priorite || ticket.priority);
   const statusBadge = getStatusBadge(ticket.status || ticket.statut);
   const StatusIcon = statusBadge.icon;
@@ -85,6 +86,12 @@ function TicketCard({ ticket }) {
           <span className="text-xs font-bold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">
             #{ticket.id || "0"}
           </span>
+          {(ticket.categorieNom || ticket.categorie?.nom) && (
+            <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200/60 flex items-center gap-1">
+              <Layers className="w-3.5 h-3.5 text-indigo-500" />
+              {ticket.categorieNom || ticket.categorie?.nom}
+            </span>
+          )}
           <span
             className={`text-xs font-bold px-2.5 py-1 rounded-lg border flex items-center gap-1 ${statusBadge.className}`}
           >
@@ -121,11 +128,12 @@ function TicketCard({ ticket }) {
           )}
         </div>
         <button
-          type="button"
-          className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 hover:underline cursor-pointer"
+        type="button"
+        onClick={() => navigate(`/tickets/${ticket.id}`)}
+        className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 hover:underline cursor-pointer"
         >
-          <span>Détails</span>
-          <ChevronRight className="w-3.5 h-3.5" />
+        <span>Détails</span>
+        <ChevronRight className="w-3.5 h-3.5" />
         </button>
       </div>
     </div>
