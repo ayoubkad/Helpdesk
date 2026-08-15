@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../Context/AuthContext";
 import {
@@ -7,16 +7,14 @@ import {
   AlertCircle,
   CheckCircle2,
   ArrowLeft,
+  ArrowRight,
   Loader2,
   Send,
   PlusCircle,
-  Sparkles,
-  Layers,
-  ArrowRight
+  Layers
 } from "lucide-react";
 
 function CreateTicket() {
-  const navigate = useNavigate();
   const { userId } = useAuth();
 
   const [formData, setFormData] = useState({

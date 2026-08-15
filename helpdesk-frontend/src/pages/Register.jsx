@@ -13,9 +13,7 @@ import {
     AlertCircle,
     ArrowRight,
     Loader2,
-    LogIn,
-    UserCog,
-    Check
+    LogIn
 } from 'lucide-react';
 
 const Register = () => {
@@ -37,34 +35,6 @@ const Register = () => {
     const [touched, setTouched] = useState({});
     const [loading, setLoading] = useState(false);
     const [status, setStatus] = useState({ type: null, message: '' });
-
-    // Roles configuration with icons and descriptions
-    const roles = [
-        {
-            id: 'USER',
-            label: 'Utilisateur',
-            desc: 'Déposer et suivre des tickets',
-            icon: User,
-            color: 'text-blue-600',
-            bgColor: 'bg-blue-50 border-blue-200'
-        },
-        {
-            id: 'TECHNICIEN',
-            label: 'Technicien',
-            desc: 'Traiter et résoudre les incidents',
-            icon: UserCog,
-            color: 'text-emerald-600',
-            bgColor: 'bg-emerald-50 border-emerald-200'
-        },
-        {
-            id: 'ADMIN',
-            label: 'Administrateur',
-            desc: 'Gestion globale et supervision',
-            icon: ShieldCheck,
-            color: 'text-purple-600',
-            bgColor: 'bg-purple-50 border-purple-200'
-        }
-    ];
 
     // Password strength computation
     const getPasswordStrength = (pass) => {
@@ -110,9 +80,6 @@ const Register = () => {
                 } else if (!/^[0-9+() -]{8,20}$/.test(trimmed)) {
                     error = 'Numéro de téléphone invalide (ex: 06 12 34 56 78)';
                 }
-                break;
-            case 'role':
-                if (!trimmed) error = 'Veuillez sélectionner un rôle';
                 break;
             case 'password':
                 if (!value) {
@@ -177,12 +144,6 @@ const Register = () => {
         }));
     };
 
-    const handleRoleSelect = (roleId) => {
-        setFormData((prev) => ({ ...prev, role: roleId }));
-        setTouched((prev) => ({ ...prev, role: true }));
-        setErrors((prev) => ({ ...prev, role: '' }));
-    };
-
     const validateForm = () => {
         const newErrors = {};
         Object.keys(formData).forEach((key) => {
@@ -234,10 +195,10 @@ const Register = () => {
                 type: 'success',
                 message: typeof response.data === 'string'
                     ? response.data
-                    : 'Votre compte a été créé avec succès ! Vous pouvez maintenant vous connecter.'
+                    : 'Votre compte a été créé avec succès ! Redirection vers la page de connexion...'
             });
 
-            // Reset form upon success
+            // Reset form upon success and redirect
             setFormData({
                 nom: '',
                 prenom: '',
@@ -249,6 +210,10 @@ const Register = () => {
             });
             setTouched({});
             setErrors({});
+
+            setTimeout(() => {
+                navigate('/login');
+            }, 1500);
 
         } catch (error) {
             console.error('Registration error:', error);
@@ -471,55 +436,6 @@ const Register = () => {
                                     )}
                                 </div>
 
-                            </div>
-
-                            {/* Role Selection */}
-                            <div>
-                                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-                                    Type de profil (Rôle) <span className="text-red-500">*</span>
-                                </label>
-                                
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                    {roles.map((r) => {
-                                        const IconComp = r.icon;
-                                        const isSelected = formData.role === r.id;
-                                        return (
-                                            <button
-                                                key={r.id}
-                                                type="button"
-                                                onClick={() => handleRoleSelect(r.id)}
-                                                className={`flex flex-col items-start p-3.5 rounded-2xl border text-left transition-all duration-200 relative ${
-                                                    isSelected
-                                                        ? 'border-indigo-600 bg-indigo-50/60 ring-2 ring-indigo-600/20 shadow-sm'
-                                                        : 'border-slate-200 bg-slate-50/30 hover:border-slate-300 hover:bg-slate-50'
-                                                }`}
-                                            >
-                                                <div className="flex items-center justify-between w-full mb-1.5">
-                                                    <div className={`p-1.5 rounded-lg ${isSelected ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}>
-                                                        <IconComp className="w-4 h-4" />
-                                                    </div>
-                                                    {isSelected && (
-                                                        <div className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center">
-                                                            <Check className="w-3 h-3 stroke-[3]" />
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <span className={`text-sm font-bold ${isSelected ? 'text-indigo-950' : 'text-slate-800'}`}>
-                                                    {r.label}
-                                                </span>
-                                                <span className="text-[11px] text-slate-500 mt-0.5 leading-snug">
-                                                    {r.desc}
-                                                </span>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                                {errors.role && (
-                                    <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
-                                        <AlertCircle className="w-3.5 h-3.5" />
-                                        {errors.role}
-                                    </p>
-                                )}
                             </div>
 
                             {/* Grid: Mot de passe & Confirmation */}
