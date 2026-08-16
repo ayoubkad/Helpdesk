@@ -21,6 +21,12 @@ import {
   Info
 } from "lucide-react";
 import "./TicketDetailsModal.css";
+import {
+  getCreatorName,
+  getTechnicianName,
+  hasTechnician,
+  isAssignedToUser
+} from "../utils/ticketDisplay";
 
 const API_URL = "http://localhost:8081/api";
 
@@ -104,6 +110,12 @@ const TicketDetailsModal = ({
       normalized === "ADMINISTRATEUR"
     );
   };
+
+  const currentUserId = localStorage.getItem("userId");
+  const currentUserEmail = localStorage.getItem("userEmail");
+  const isAdmin = ["ADMIN", "ADMINISTRATEUR"].includes(normalizeRole(userRole));
+  const canModifyStatus =
+    isTechnician && (isAdmin || isAssignedToUser(ticket, currentUserId, currentUserEmail));
 
   // Décoder le JWT
   const decodeJWT = (token) => {
@@ -327,6 +339,11 @@ const TicketDetailsModal = ({
 
   // Changer le statut : Appel /statut?statutTicket={statut}
   const handleChangeStatus = async (newStatus) => {
+    if (!canModifyStatus) {
+      showToast("error", "Vous devez d'abord vous attribuer ce ticket.");
+      return;
+    }
+
     setIsActionLoading(true);
     try {
       const token = localStorage.getItem("token");
@@ -562,9 +579,7 @@ const TicketDetailsModal = ({
                       <span>Créé par</span>
                     </div>
                     <span className="meta-card-val font-semibold">
-                      {ticket.createur?.nom ||
-                        ticket.createur?.email ||
-                        (ticket.createurId ? `Utilisateur #${ticket.createurId}` : "Inconnu")}
+                      {getCreatorName(ticket)}
                     </span>
                   </div>
 
@@ -575,9 +590,7 @@ const TicketDetailsModal = ({
                       <span>Assigné à</span>
                     </div>
                     <span className="meta-card-val">
-                      {ticket.technicien?.nom ||
-                        ticket.technicien?.email ||
-                        (ticket.technicienId ? `Technicien #${ticket.technicienId}` : "Non assigné")}
+                      {getTechnicianName(ticket)}
                     </span>
                   </div>
 
@@ -606,7 +619,7 @@ const TicketDetailsModal = ({
                   </div>
 
                   <div className="panel-actions-row">
-                    {!ticket.technicien && !ticket.technicienId ? (
+                    {!hasTechnician(ticket) ? (
                       <button
                         onClick={handleAssignToMe}
                         className="btn-action-primary"
@@ -621,19 +634,23 @@ const TicketDetailsModal = ({
                         <span>
                           Pris en charge par :{" "}
                           <strong>
-                            {ticket.technicien?.nom ||
-                              ticket.technicien?.email ||
-                              `Tech #${ticket.technicienId}`}
+                            {getTechnicianName(ticket)}
                           </strong>
                         </span>
                       </div>
+                    )}
+
+                    {!canModifyStatus && (
+                      <p className="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                        Attribuez-vous ce ticket avant de modifier son statut.
+                      </p>
                     )}
 
                     <div className="status-button-group">
                       <button
                         onClick={() => handleChangeStatus("EN_COURS")}
                         className={`btn-state btn-state-progress ${ticketStatus === "EN_COURS" ? "active-state" : ""}`}
-                        disabled={isActionLoading || ticketStatus === "EN_COURS"}
+                        disabled={isActionLoading || !canModifyStatus || ticketStatus === "EN_COURS"}
                       >
                         <Clock className="w-3.5 h-3.5" />
                         <span>En cours</span>
@@ -642,7 +659,7 @@ const TicketDetailsModal = ({
                       <button
                         onClick={() => handleChangeStatus("RESOLU")}
                         className={`btn-state btn-state-resolved ${ticketStatus === "RESOLU" ? "active-state" : ""}`}
-                        disabled={isActionLoading || ticketStatus === "RESOLU"}
+                        disabled={isActionLoading || !canModifyStatus || ticketStatus === "RESOLU"}
                       >
                         <CheckCircle2 className="w-3.5 h-3.5" />
                         <span>Résolu</span>
@@ -651,7 +668,7 @@ const TicketDetailsModal = ({
                       <button
                         onClick={() => handleChangeStatus("CLOTURE")}
                         className={`btn-state btn-state-closed ${ticketStatus === "CLOTURE" ? "active-state" : ""}`}
-                        disabled={isActionLoading || ticketStatus === "CLOTURE"}
+                        disabled={isActionLoading || !canModifyStatus || ticketStatus === "CLOTURE"}
                       >
                         <Lock className="w-3.5 h-3.5" />
                         <span>Clôturer</span>

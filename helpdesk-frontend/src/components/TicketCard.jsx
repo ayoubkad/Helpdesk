@@ -10,6 +10,7 @@ import {
   Flame,
   UserCheck
 } from "lucide-react";
+import { getCreatorName, getTechnicianName, hasTechnician } from "../utils/ticketDisplay";
 
 function TicketCard({ ticket, onSelect }) {
   const getPriorityBadge = (priorite) => {
@@ -81,10 +82,7 @@ function TicketCard({ ticket, onSelect }) {
     }
   };
 
-  const creatorName =
-    ticket.createur?.nom ||
-    ticket.createur?.email ||
-    (ticket.createurId ? `Utilisateur #${ticket.createurId}` : null);
+  const creatorName = getCreatorName(ticket);
 
   const handleClick = () => {
     if (onSelect) {
@@ -151,10 +149,10 @@ function TicketCard({ ticket, onSelect }) {
               <span className="max-w-[120px] truncate">{creatorName}</span>
             </div>
           )}
-          {ticket.technicien && (
+          {hasTechnician(ticket) && (
             <div className="flex items-center gap-1 text-emerald-600 font-medium">
               <UserCheck className="w-3.5 h-3.5" />
-              <span>{ticket.technicien.nom || "Tech assigné"}</span>
+              <span>{getTechnicianName(ticket)}</span>
             </div>
           )}
         </div>

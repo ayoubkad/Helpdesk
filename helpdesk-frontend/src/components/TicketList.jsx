@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import api from "../services/api";
 import TicketCard from "./TicketCard";
 import { Inbox, RotateCcw } from "lucide-react";
+import { useAuth } from "../Context/AuthContext";
+import { getCurrentUserId, normalizeRole } from "../utils/ticketDisplay";
 
 function TicketList({
   tickets: parentTickets,
@@ -9,26 +11,40 @@ function TicketList({
   onSelectTicket,
   onResetFilters
 }) {
+  const { userId, userRole } = useAuth();
   const [internalTickets, setInternalTickets] = useState([]);
   const [internalLoading, setInternalLoading] = useState(false);
 
-  const fetchTickets = async () => {
+  const fetchTickets = useCallback(async () => {
     setInternalLoading(true);
     try {
-      const response = await api.get("/api/tickets");
+      const currentUserId = getCurrentUserId(userId);
+      const isStaff = ["TECHNICIEN", "ADMIN"].includes(normalizeRole(userRole));
+
+      // Évite d'exposer tous les tickets lorsque ce composant est utilisé sans
+      // données fournies par son parent.
+      if (!isStaff && !currentUserId) {
+        setInternalTickets([]);
+        return;
+      }
+
+      const endpoint = isStaff
+        ? "/api/tickets"
+        : `/api/tickets/user/${encodeURIComponent(currentUserId)}`;
+      const response = await api.get(endpoint);
       setInternalTickets(response.data || []);
     } catch (error) {
       console.error("Erreur lors de la récupération des tickets:", error);
     } finally {
       setInternalLoading(false);
     }
-  };
+  }, [userId, userRole]);
 
   useEffect(() => {
     if (!parentTickets) {
       fetchTickets();
     }
-  }, [parentTickets]);
+  }, [parentTickets, fetchTickets]);
 
   const tickets = parentTickets !== undefined ? parentTickets : internalTickets;
   const loading = parentLoading !== undefined ? parentLoading : internalLoading;

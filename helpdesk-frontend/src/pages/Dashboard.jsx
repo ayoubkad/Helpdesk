@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../Context/AuthContext";
 import TicketList from "../components/TicketList";
 import TicketDetailsModal from "../components/TicketDetailsModal";
+import { getCurrentUserId } from "../utils/ticketDisplay";
 import {
   Plus,
   Search,
@@ -75,12 +76,20 @@ function Dashboard() {
     }
   ];
 
-  const fetchTickets = async (showRefresh = false) => {
+  const fetchTickets = useCallback(async (showRefresh = false) => {
     if (showRefresh) setIsRefreshing(true);
     else setLoading(true);
 
     try {
-      const response = await api.get("/api/tickets");
+      const currentUserId = getCurrentUserId(userId);
+
+      // Le dashboard utilisateur ne doit jamais appeler l'endpoint global.
+      if (!currentUserId) {
+        setTickets([]);
+        return;
+      }
+
+      const response = await api.get(`/api/tickets/user/${encodeURIComponent(currentUserId)}`);
       setTickets(response.data || []);
     } catch (error) {
       console.error("Erreur lors du chargement des tickets:", error);
@@ -88,21 +97,22 @@ function Dashboard() {
       setLoading(false);
       setIsRefreshing(false);
     }
-  };
+  }, [userId]);
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       const response = await api.get("/api/categories");
       setCategories(response.data || []);
     } catch (error) {
       console.error("Erreur lors du chargement des catégories :", error);
     }
-  };
+  }, []);
 
   useEffect(() => {
+    if (!getCurrentUserId(userId)) return;
     fetchTickets();
     fetchCategories();
-  }, []);
+  }, [userId, fetchTickets, fetchCategories]);
 
   // Validation
   const validateForm = () => {

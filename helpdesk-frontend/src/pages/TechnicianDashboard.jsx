@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../Context/AuthContext";
 import TicketDetailsModal from "../components/TicketDetailsModal";
+import { getCreatorName, getTechnicianName, hasTechnician } from "../utils/ticketDisplay";
 import {
   Wrench,
   LogOut,
@@ -305,100 +306,117 @@ const TechnicianDashboard = () => {
       {/* Main Container */}
       <main className="tech-main-container">
         {/* Title & Headline */}
-        <div className="tech-dashboard-title-bar">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
-            <h1 className="tech-main-title">Espace d'Intervention Technique</h1>
-            <p className="tech-main-subtitle">
-              Supervisez, traitez et résolvez les incidents signalés par les utilisateurs en temps réel.
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+              Tableau de bord technicien
+            </h1>
+            <p className="text-sm text-slate-500 mt-1">
+              Consultez et gérez les tickets de support technique en temps réel.
             </p>
           </div>
         </div>
 
         {/* Interactive Stats Grid / Quick Status Filter */}
-        <div className="tech-stats-grid">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
           {/* Card: Total */}
           <div
-            className={`tech-stat-card card-total ${filterStatus === "ALL" ? "is-active" : ""}`}
+            className={`p-5 rounded-2xl border transition-all duration-200 cursor-pointer ${
+              filterStatus === "ALL"
+                ? "bg-white border-indigo-500 ring-2 ring-indigo-500/20 shadow-md scale-[1.01]"
+                : "bg-white border-slate-200/70 shadow-xs hover:border-slate-300 hover:-translate-y-0.5"
+            }`}
             onClick={() => setFilterStatus("ALL")}
             role="button"
             tabIndex={0}
           >
-            <div className="stat-icon-wrapper icon-total">
-              <Layers className="w-5 h-5" />
+            <div className="flex items-center justify-between text-slate-500 text-xs font-semibold uppercase tracking-wider mb-2">
+              <span>Total tickets</span>
+              <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">
+                <Layers className="w-4 h-4" />
+              </div>
             </div>
-            <div className="stat-data">
-              <span className="stat-number">{countTotal}</span>
-              <span className="stat-label">Total Tickets</span>
-            </div>
-            <div className="stat-indicator"></div>
+            <p className="text-2xl sm:text-3xl font-extrabold text-slate-900">{countTotal}</p>
           </div>
 
           {/* Card: Nouveaux */}
           <div
-            className={`tech-stat-card card-new ${filterStatus === "NOUVEAU" ? "is-active" : ""}`}
+            className={`p-5 rounded-2xl border transition-all duration-200 cursor-pointer ${
+              filterStatus === "NOUVEAU"
+                ? "bg-white border-amber-500 ring-2 ring-amber-500/20 shadow-md scale-[1.01]"
+                : "bg-white border-slate-200/70 shadow-xs hover:border-slate-300 hover:-translate-y-0.5"
+            }`}
             onClick={() => setFilterStatus("NOUVEAU")}
             role="button"
             tabIndex={0}
           >
-            <div className="stat-icon-wrapper icon-new">
-              <Sparkles className="w-5 h-5" />
+            <div className="flex items-center justify-between text-amber-600 text-xs font-semibold uppercase tracking-wider mb-2">
+              <span>Nouveaux</span>
+              <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600">
+                <Sparkles className="w-4 h-4" />
+              </div>
             </div>
-            <div className="stat-data">
-              <span className="stat-number">{countNew}</span>
-              <span className="stat-label">Nouveaux</span>
-            </div>
-            <div className="stat-indicator"></div>
+            <p className="text-2xl sm:text-3xl font-extrabold text-slate-900">{countNew}</p>
           </div>
 
           {/* Card: En cours */}
           <div
-            className={`tech-stat-card card-inprogress ${filterStatus === "EN_COURS" ? "is-active" : ""}`}
+            className={`p-5 rounded-2xl border transition-all duration-200 cursor-pointer ${
+              filterStatus === "EN_COURS"
+                ? "bg-white border-blue-500 ring-2 ring-blue-500/20 shadow-md scale-[1.01]"
+                : "bg-white border-slate-200/70 shadow-xs hover:border-slate-300 hover:-translate-y-0.5"
+            }`}
             onClick={() => setFilterStatus("EN_COURS")}
             role="button"
             tabIndex={0}
           >
-            <div className="stat-icon-wrapper icon-inprogress">
-              <Clock className="w-5 h-5" />
+            <div className="flex items-center justify-between text-blue-600 text-xs font-semibold uppercase tracking-wider mb-2">
+              <span>En cours</span>
+              <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                <Clock className="w-4 h-4" />
+              </div>
             </div>
-            <div className="stat-data">
-              <span className="stat-number">{countInProgress}</span>
-              <span className="stat-label">En cours</span>
-            </div>
-            <div className="stat-indicator"></div>
+            <p className="text-2xl sm:text-3xl font-extrabold text-slate-900">{countInProgress}</p>
           </div>
 
           {/* Card: Résolus */}
           <div
-            className={`tech-stat-card card-resolved ${filterStatus === "RESOLU" ? "is-active" : ""}`}
+            className={`p-5 rounded-2xl border transition-all duration-200 cursor-pointer ${
+              filterStatus === "RESOLU"
+                ? "bg-white border-emerald-500 ring-2 ring-emerald-500/20 shadow-md scale-[1.01]"
+                : "bg-white border-slate-200/70 shadow-xs hover:border-slate-300 hover:-translate-y-0.5"
+            }`}
             onClick={() => setFilterStatus("RESOLU")}
             role="button"
             tabIndex={0}
           >
-            <div className="stat-icon-wrapper icon-resolved">
-              <CheckCircle2 className="w-5 h-5" />
+            <div className="flex items-center justify-between text-emerald-600 text-xs font-semibold uppercase tracking-wider mb-2">
+              <span>Résolus</span>
+              <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
+                <CheckCircle2 className="w-4 h-4" />
+              </div>
             </div>
-            <div className="stat-data">
-              <span className="stat-number">{countResolved}</span>
-              <span className="stat-label">Résolus</span>
-            </div>
-            <div className="stat-indicator"></div>
+            <p className="text-2xl sm:text-3xl font-extrabold text-slate-900">{countResolved}</p>
           </div>
 
           {/* Card: Clôturés */}
           <div
-            className={`tech-stat-card card-closed ${filterStatus === "CLOTURE" ? "is-active" : ""}`}
+            className={`p-5 rounded-2xl border transition-all duration-200 cursor-pointer ${
+              filterStatus === "CLOTURE"
+                ? "bg-white border-slate-500 ring-2 ring-slate-500/20 shadow-md scale-[1.01]"
+                : "bg-white border-slate-200/70 shadow-xs hover:border-slate-300 hover:-translate-y-0.5"
+            }`}
             onClick={() => setFilterStatus("CLOTURE")}
             role="button"
             tabIndex={0}
           >
-            <div className="stat-icon-wrapper icon-closed">
-              <Lock className="w-5 h-5" />
+            <div className="flex items-center justify-between text-slate-600 text-xs font-semibold uppercase tracking-wider mb-2">
+              <span>Clôturés</span>
+              <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600">
+                <Lock className="w-4 h-4" />
+              </div>
             </div>
-            <div className="stat-data">
-              <span className="stat-number">{countClosed}</span>
-              <span className="stat-label">Clôturés</span>
-            </div>
-            <div className="stat-indicator"></div>
+            <p className="text-2xl sm:text-3xl font-extrabold text-slate-900">{countClosed}</p>
           </div>
         </div>
 
@@ -582,15 +600,12 @@ const TechnicianDashboard = () => {
               const priorityCfg = getPriorityConfig(getTicketPriority(ticket));
               const PriorityIcon = priorityCfg.icon;
 
-              const isAssigned = ticket.technicien || ticket.technicienId;
+              const isAssigned = hasTechnician(ticket);
               const isAssignedToMe =
                 (ticket.technicienId && String(ticket.technicienId) === String(userId)) ||
                 (ticket.technicien?.email && ticket.technicien.email.toLowerCase() === displayEmail.toLowerCase());
 
-              const creatorName =
-                ticket.createur?.nom ||
-                ticket.createur?.email ||
-                (ticket.createurId ? `Utilisateur #${ticket.createurId}` : "Anonyme");
+              const creatorName = getCreatorName(ticket);
 
               return (
                 <div
@@ -664,7 +679,7 @@ const TechnicianDashboard = () => {
                           <span>
                             {isAssignedToMe
                               ? "Assigné à vous"
-                              : ticket.technicien?.nom || ticket.technicien?.email || `Tech #${ticket.technicienId}`}
+                              : getTechnicianName(ticket)}
                           </span>
                         </span>
                       ) : (

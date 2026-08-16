@@ -24,8 +24,10 @@ public class CommentaireService {
             throw new RuntimeException("Erreur: Le contenu du commentaire ne peut pas être vide !");
         }
 
-        if(user.getRole().getNom().equalsIgnoreCase("USER")){
-            throw new RuntimeException("Accès refusé : Les utilisateurs simples ne peuvent pas créer de notes internes !");
+        if (estInterne && user.getRole().getNom().equalsIgnoreCase("USER")) {
+            throw new RuntimeException(
+                    "Accès refusé : Les utilisateurs simples ne peuvent pas créer de notes internes !"
+            );
         }
 
         Ticket ticket = ticketRepository.findById(ticketId)
