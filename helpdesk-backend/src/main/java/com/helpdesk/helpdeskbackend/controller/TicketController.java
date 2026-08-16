@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -41,6 +42,8 @@ public class TicketController {
         return ResponseEntity.ok(ticketService.listerTicketsParUtilisateur(userId));
     }
 
+    // RBAC (Semaine 2 - Mercredi) : seuls TECHNICIEN et ADMIN peuvent s'assigner un ticket
+    @PreAuthorize("hasAnyRole('TECHNICIEN', 'ADMIN')")
     @PutMapping("/{id}/assigner")
     public ResponseEntity<TicketDTO> assignerTechnicien(
             @PathVariable Long id,
@@ -48,6 +51,8 @@ public class TicketController {
         return ResponseEntity.ok(ticketService.assignerTechnicien(id, techId));
     }
 
+    // RBAC (Semaine 2 - Mercredi) : seuls TECHNICIEN et ADMIN peuvent changer le statut
+    @PreAuthorize("hasAnyRole('TECHNICIEN', 'ADMIN')")
     @PutMapping("/{id}/statut")
     public ResponseEntity<TicketDTO> changerStatut(
             @PathVariable Long id,
@@ -55,11 +60,13 @@ public class TicketController {
         return ResponseEntity.ok(ticketService.changerStatut(id, statutTicket));
     }
 
+    @PreAuthorize("hasAnyRole('TECHNICIEN', 'ADMIN')")
     @PutMapping("/{id}/cloturer")
     public ResponseEntity<TicketDTO> cloturerTicket(@PathVariable Long id) {
         return ResponseEntity.ok(ticketService.cloturerTicket(id));
     }
 
+    @PreAuthorize("hasAnyRole('TECHNICIEN', 'ADMIN')")
     @PutMapping("/{id}/rouvrir")
     public ResponseEntity<TicketDTO> rouvrirTicket(@PathVariable Long id) {
         return ResponseEntity.ok(ticketService.rouvrirTicket(id));

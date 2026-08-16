@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
@@ -24,6 +25,12 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     List<Ticket> findByCategorieId(Long categorieId);
 
     List<Ticket> findByTechnicienIdAndStatus(Long technicienId, StatutTicket status);
+
+    Optional<Ticket> findTicketsByCreateur(User createur);
+
+    boolean existsByIdAndCreateur(Long id, User createur);
+
+    boolean existsByIdAndTechnicien(Long id, User technicien);
 
     long countByStatus(StatutTicket status);
 }

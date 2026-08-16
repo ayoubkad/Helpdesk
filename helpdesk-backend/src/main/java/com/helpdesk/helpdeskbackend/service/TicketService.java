@@ -135,9 +135,15 @@ public class TicketService {
                 .dateCloture(ticket.getDateCloture())
                 .dateModification(ticket.getDateModification())
                 .createurId(ticket.getCreateur() != null ? ticket.getCreateur().getId() : null)
+                .createurNom(ticket.getCreateur() != null ? ticket.getCreateur().getNom() : null)
+                .createurPrenom(ticket.getCreateur() != null ? ticket.getCreateur().getPrenom() : null)
+                .createurEmail(ticket.getCreateur() != null ? ticket.getCreateur().getEmail() : null)
                 .technicienId(ticket.getTechnicien() != null ? ticket.getTechnicien().getId() : null)
+                .technicienNom(ticket.getTechnicien() != null ? ticket.getTechnicien().getNom() : null)
+                .technicienPrenom(ticket.getTechnicien() != null ? ticket.getTechnicien().getPrenom() : null)
+                .technicienEmail(ticket.getTechnicien() != null ? ticket.getTechnicien().getEmail() : null)
                 .categorieId(ticket.getCategorie() != null ? ticket.getCategorie().getId() : null)
+                .categorieNom(ticket.getCategorie() != null ? ticket.getCategorie().getNom() : null)
                 .build();
     }
-
 }

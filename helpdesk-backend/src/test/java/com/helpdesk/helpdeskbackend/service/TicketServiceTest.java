@@ -116,6 +116,7 @@ class TicketServiceTest {
             assertThat(meResultat.getTitre()).isEqualTo("Problème connexion Wi-Fi");
             assertThat(meResultat.getCreateurId()).isEqualTo(1L);
             assertThat(meResultat.getCategorieId()).isEqualTo(10L);
+            assertThat(meResultat.getCategorieNom()).isEqualTo("Réseau");
             assertThat(meResultat.getStatus()).isEqualTo(StatutTicket.NOUVEAU);
 
             verify(userRepository, times(1)).findById(1L);

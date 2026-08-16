@@ -1,0 +1,169 @@
+.comment-thread {
+  background-color: #f5f6fa;
+  padding: 20px;
+  border-radius: 10px;
+  margin-top: 25px;
+}
+
+/* Title */
+.comment-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 20px;
+}
+
+/* Comments list */
+.comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+/* Individual comment */
+.comment-card {
+  background: white;
+  padding: 18px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Comment header */
+.comment-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.comment-header strong {
+  color: #1f2937;
+  font-size: 15px;
+}
+
+/* Comment content */
+.comment-content {
+  color: #4b5563;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+/* Date */
+.comment-date {
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+/* Internal note */
+.internal-comment {
+  background-color: #fff7ed;
+  border: 1px solid #fdba74;
+}
+
+.internal-badge {
+  background-color: #ffedd5;
+  color: #c2410c;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+/* Error message */
+.comment-error {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 15px;
+}
+
+/* Form */
+.comment-form {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Textarea */
+.comment-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+  resize: vertical;
+  min-height: 100px;
+  outline: none;
+  box-sizing: border-box;
+  margin-bottom: 15px;
+}
+
+.comment-textarea:focus {
+  border-color: #2563eb;
+}
+
+/* Internal note checkbox */
+.internal-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #374151;
+  margin-bottom: 15px;
+  cursor: pointer;
+}
+
+.internal-checkbox input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+/* Add button */
+.comment-submit {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.comment-submit:hover {
+  background: #1d4ed8;
+}
+
+.comment-submit:disabled {
+  background: #93c5fd;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .comment-thread {
+    padding: 15px;
+  }
+
+  .comment-card {
+    padding: 15px;
+  }
+
+  .comment-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .comment-form {
+    padding: 15px;
+  }
+}
