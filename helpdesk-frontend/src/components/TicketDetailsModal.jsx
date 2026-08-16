@@ -116,6 +116,7 @@ const TicketDetailsModal = ({
   const isAdmin = ["ADMIN", "ADMINISTRATEUR"].includes(normalizeRole(userRole));
   const canModifyStatus =
     isTechnician && (isAdmin || isAssignedToUser(ticket, currentUserId, currentUserEmail));
+  const isTicketClosed = (ticket?.status || ticket?.statut) === "CLOTURE";
 
   // Décoder le JWT
   const decodeJWT = (token) => {
@@ -249,6 +250,10 @@ const TicketDetailsModal = ({
   // Ajouter un commentaire
   const handleAddComment = async (e) => {
     if (e) e.preventDefault();
+    if (isTicketClosed) {
+      showToast("error", "Ce ticket est clôturé : aucun nouveau commentaire n'est autorisé.");
+      return;
+    }
     if (!newComment.trim() || isSubmittingComment) return;
 
     setIsSubmittingComment(true);
@@ -755,43 +760,50 @@ const TicketDetailsModal = ({
                 )}
 
                 {/* Comment Input Form */}
-                <form className="comment-composer-box" onSubmit={handleAddComment}>
-                  <textarea
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    placeholder="Écrire un message ou une note sur ce ticket..."
-                    rows={3}
-                    className="composer-textarea"
-                    disabled={isSubmittingComment}
-                  />
-
-                  <div className="composer-footer">
-                    {isTechnician && (
-                      <label className="composer-internal-checkbox">
-                        <input
-                          type="checkbox"
-                          checked={isInternal}
-                          onChange={(e) => setIsInternal(e.target.checked)}
-                          disabled={isSubmittingComment}
-                        />
-                        <span>Note interne (réservée aux techniciens)</span>
-                      </label>
-                    )}
-
-                    <button
-                      type="submit"
-                      className="btn-send-comment"
-                      disabled={!newComment.trim() || isSubmittingComment}
-                    >
-                      {isSubmittingComment ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Send className="w-4 h-4" />
-                      )}
-                      <span>Envoyer</span>
-                    </button>
+                {isTicketClosed ? (
+                  <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">
+                    <Lock className="w-4 h-4 shrink-0" />
+                    <span>Ce ticket est clôturé. Les commentaires ne sont plus autorisés.</span>
                   </div>
-                </form>
+                ) : (
+                  <form className="comment-composer-box" onSubmit={handleAddComment}>
+                    <textarea
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      placeholder="Écrire un message ou une note sur ce ticket..."
+                      rows={3}
+                      className="composer-textarea"
+                      disabled={isSubmittingComment}
+                    />
+
+                    <div className="composer-footer">
+                      {isTechnician && (
+                        <label className="composer-internal-checkbox">
+                          <input
+                            type="checkbox"
+                            checked={isInternal}
+                            onChange={(e) => setIsInternal(e.target.checked)}
+                            disabled={isSubmittingComment}
+                          />
+                          <span>Note interne (réservée aux techniciens)</span>
+                        </label>
+                      )}
+
+                      <button
+                        type="submit"
+                        className="btn-send-comment"
+                        disabled={!newComment.trim() || isSubmittingComment}
+                      >
+                        {isSubmittingComment ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Send className="w-4 h-4" />
+                        )}
+                        <span>Envoyer</span>
+                      </button>
+                    </div>
+                  </form>
+                )}
               </div>
             </>
           )}

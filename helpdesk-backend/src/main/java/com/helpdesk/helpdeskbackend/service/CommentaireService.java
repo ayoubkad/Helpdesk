@@ -1,5 +1,6 @@
 package com.helpdesk.helpdeskbackend.service;
 
+import com.helpdesk.helpdeskbackend.entity.StatutTicket;
 import com.helpdesk.helpdeskbackend.entity.Ticket;
 import com.helpdesk.helpdeskbackend.entity.User;
 import com.helpdesk.helpdeskbackend.repository.CommentaireRepository;
@@ -7,11 +8,13 @@ import com.helpdesk.helpdeskbackend.repository.TicketRepository;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import com.helpdesk.helpdeskbackend.dto.CommentaireDTO;
 import com.helpdesk.helpdeskbackend.entity.Commentaire;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +36,28 @@ public class CommentaireService {
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new RuntimeException(" Ticket avec l'ID " + ticketId + " n'est existe pas"));
 
+        if (ticket.getStatus() == StatutTicket.CLOTURE) {
+            throw new IllegalStateException("Ce ticket est clôturé : aucun nouveau commentaire n'est autorisé.");
+        }
+
+//        if (user.getRole().getNom().equalsIgnoreCase("TECHNICIEN")) {
+//            boolean isAssigned = ticket.getTechnicien() != null
+//                    && ticket.getTechnicien().getId().equals(user.getId());
+//
+//            if (!isAssigned) {
+//                throw new AccessDeniedException("Accès refusé : vous n'avez pas les droits pour ajouter un commentaire a cette ticket.");
+//            }
+//
+//            Commentaire commentaire = Commentaire.builder()
+//                    .contenu(contenu.trim())
+//                    .auteur(user)
+//                    .estInterne(estInterne)
+//                    .ticket(ticket)
+//                    .build();
+//            Commentaire commentaireSauvegarde = commentaireRepository.save(commentaire);
+//            return commentaireToDTO(commentaireSauvegarde);
+//        }
+
         Commentaire commentaire = Commentaire.builder()
                 .contenu(contenu.trim())
                 .auteur(user)
@@ -43,22 +68,46 @@ public class CommentaireService {
         return commentaireToDTO(commentaireSauvegarde);
     }
 
-    public List<CommentaireDTO> listCommentairesParTicket(Long ticketId, @NonNull User user) {
-        List<Commentaire> commentaires;
+    public List<CommentaireDTO> listCommentairesParTicket(
+            Long ticketId,
+            @NonNull User user
+    ) {
 
-        if(!ticketRepository.existsById(ticketId)){
-            throw new RuntimeException("Le ticket avec l'ID " + ticketId + " n'existe pas !");
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new RuntimeException("Ticket introuvable avec l'ID : " + ticketId));
+
+        if (user.getRole().getNom().equalsIgnoreCase("USER")) {
+
+            boolean isOwner = ticketRepository.existsByIdAndCreateur(ticketId, user);
+
+            if (!isOwner) {
+                throw new AccessDeniedException("Vous n'avez pas accès à ce ticket.");
+            }
+
+            return commentaireRepository
+                    .findByTicketIdAndEstInterneFalse(ticketId)
+                    .stream()
+                    .map(this::commentaireToDTO)
+                    .toList();
         }
-
-        if (user.getRole().getNom().equals("USER")) {
-            commentaires = commentaireRepository
-                    .findByTicketIdAndEstInterneFalse(ticketId);
-        } else {
-            commentaires = commentaireRepository
-                    .findByTicketId(ticketId);
-        }
-
-        return commentaires
+//        if (user.getRole().getNom().equalsIgnoreCase("TECHNICIEN")) {
+//            boolean isAssigned = ticket.getTechnicien() != null
+//                    && ticket.getTechnicien().getId().equals(user.getId());
+//
+//            boolean isAvailable = ticket.getTechnicien() == null
+//                    && ticket.getStatus() == StatutTicket.NOUVEAU;
+//
+//            if (!isAssigned && !isAvailable) {
+//                throw new AccessDeniedException("Accès refusé : vous n'avez pas les droits pour consulter ce ticket.");
+//            }
+//
+//            return commentaireRepository.findByTicketId(ticketId)
+//                    .stream()
+//                    .map(this::commentaireToDTO)
+//                    .toList();
+//        }
+        return commentaireRepository
+                .findByTicketId(ticketId)
                 .stream()
                 .map(this::commentaireToDTO)
                 .toList();
