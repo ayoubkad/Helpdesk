@@ -1,0 +1,247 @@
+### ==============================================================================
+### HELPDESK API - SUITE COMPLÈTE DE TESTS DES ENDPOINTS PIÈCES JOINTES (ATTACHMENTS)
+### ==============================================================================
+
+@baseUrl = http://localhost:8081
+
+### ==============================================================================
+### 1. AUTHENTIFICATION (Récupération dynamique des Tokens JWT)
+### ==============================================================================
+
+### 1.1 Login Utilisateur Standard (USER)
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@helpdesk.com",
+  "password": "user123"
+}
+
+> {%
+    client.global.set("userToken", response.body.token);
+    client.log("Token User sauvegardé : " + response.body.token);
+%}
+
+### 1.2 Login Technicien (TECHNICIEN)
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "tech@helpdesk.com",
+  "password": "tech123"
+}
+
+> {%
+    client.global.set("techToken", response.body.token);
+    client.log("Token Tech sauvegardé : " + response.body.token);
+%}
+
+### 1.3 Login Administrateur (ADMIN)
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@helpdesk.com",
+  "password": "admin123"
+}
+
+> {%
+    client.global.set("adminToken", response.body.token);
+    client.log("Token Admin sauvegardé : " + response.body.token);
+%}
+
+
+### ==============================================================================
+### 2. CAS NOMINAUX (HAPPY PATHS - UPLOADS DE TYPES AUTORISÉS)
+### ==============================================================================
+
+### 2.1 Upload d'un fichier PDF valide (Ticket 1) -> Attendu : 201 Created
+POST {{baseUrl}}/api/tickets/1/attachments
+Authorization: Bearer {{userToken}}
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="rapport_diagnostic.pdf"
+Content-Type: application/pdf
+
+%PDF-1.4
+1 0 obj << /Type /Catalog >> endobj
+trailer << /Root 1 0 R >>
+%%EOF
+--WebAppBoundary--
+
+> {%
+    client.global.set("pdfAttachmentId", response.body.id);
+    client.log("PDF Attachment ID : " + response.body.id);
+%}
+
+### 2.2 Upload d'une image PNG valide (Ticket 1) -> Attendu : 201 Created
+POST {{baseUrl}}/api/tickets/1/attachments
+Authorization: Bearer {{userToken}}
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="capture_ecran.png"
+Content-Type: image/png
+
+<img_bytes_binary_or_raw_mock>
+--WebAppBoundary--
+
+> {%
+    client.global.set("pngAttachmentId", response.body.id);
+    client.log("PNG Attachment ID : " + response.body.id);
+%}
+
+### 2.3 Upload d'une image JPG / JPEG valide (Ticket 1) -> Attendu : 201 Created
+POST {{baseUrl}}/api/tickets/1/attachments
+Authorization: Bearer {{userToken}}
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="photo_materiel.jpg"
+Content-Type: image/jpeg
+
+<jpg_bytes_raw_content>
+--WebAppBoundary--
+
+### 2.4 Upload d'un document Word DOCX valide (Ticket 1) -> Attendu : 201 Created
+POST {{baseUrl}}/api/tickets/1/attachments
+Authorization: Bearer {{userToken}}
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="cahier_des_charges.docx"
+Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document
+
+<docx_binary_mock>
+--WebAppBoundary--
+
+
+### ==============================================================================
+### 3. CONSULTATION & TÉLÉCHARGEMENT
+### ==============================================================================
+
+### 3.1 Lister toutes les pièces jointes associées au Ticket 1 -> Attendu : 200 OK
+GET {{baseUrl}}/api/tickets/1/attachments
+Authorization: Bearer {{userToken}}
+
+### 3.2 Télécharger le fichier PDF physique via son ID -> Attendu : 200 OK (avec Content-Disposition)
+GET {{baseUrl}}/api/attachments/{{pdfAttachmentId}}/download
+Authorization: Bearer {{userToken}}
+
+### 3.3 Télécharger le fichier PNG physique -> Attendu : 200 OK
+GET {{baseUrl}}/api/attachments/{{pngAttachmentId}}/download
+Authorization: Bearer {{userToken}}
+
+
+### ==============================================================================
+### 4. TESTS DE SUPPRESSION (NORMAL & RBAC ADMIN)
+### ==============================================================================
+
+### 4.1 Suppression d'une pièce jointe par son créateur (User) -> Attendu : 204 No Content
+DELETE {{baseUrl}}/api/attachments/{{pngAttachmentId}}
+Authorization: Bearer {{userToken}}
+
+### 4.2 Suppression d'une pièce jointe par un Administrateur -> Attendu : 204 No Content
+DELETE {{baseUrl}}/api/attachments/{{pdfAttachmentId}}
+Authorization: Bearer {{adminToken}}
+
+
+### ==============================================================================
+### 5. TESTS DE VALIDATION STRICTE & GESTION D'ERREURS (400 / 404 / 413)
+### ==============================================================================
+
+### 5.1 Erreur : Extension interdite (.exe) -> Attendu : 400 Bad Request
+POST {{baseUrl}}/api/tickets/1/attachments
+Authorization: Bearer {{userToken}}
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="programme_malveillant.exe"
+Content-Type: application/x-msdownload
+
+MZ_EXEC_PAYLOAD_HERE
+--WebAppBoundary--
+
+### 5.2 Erreur : Extension de script interdite (.sh) -> Attendu : 400 Bad Request
+POST {{baseUrl}}/api/tickets/1/attachments
+Authorization: Bearer {{userToken}}
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="script_attaque.sh"
+Content-Type: text/x-shellscript
+
+#!/bin/bash
+echo "Attaque"
+--WebAppBoundary--
+
+### 5.3 Erreur : Type MIME interdit avec extension falsifiée -> Attendu : 400 Bad Request
+POST {{baseUrl}}/api/tickets/1/attachments
+Authorization: Bearer {{userToken}}
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="faux_document.pdf"
+Content-Type: application/x-dosexec
+
+MZ90000000000000
+--WebAppBoundary--
+
+### 5.4 Erreur : Fichier vide (0 octet) -> Attendu : 400 Bad Request
+POST {{baseUrl}}/api/tickets/1/attachments
+Authorization: Bearer {{userToken}}
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="fichier_vide.pdf"
+Content-Type: application/pdf
+
+
+--WebAppBoundary--
+
+### 5.5 Erreur : Sécurité - Tentative de Path Traversal dans le nom -> Attendu : 400 Bad Request
+POST {{baseUrl}}/api/tickets/1/attachments
+Authorization: Bearer {{userToken}}
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="../../../../../etc/passwd..pdf"
+Content-Type: application/pdf
+
+Fake Payload
+--WebAppBoundary--
+
+### 5.6 Erreur : Ticket inexistant (ID 99999) -> Attendu : 404 Not Found
+POST {{baseUrl}}/api/tickets/99999/attachments
+Authorization: Bearer {{userToken}}
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="document.pdf"
+Content-Type: application/pdf
+
+%PDF-1.4 test
+--WebAppBoundary--
+
+### 5.7 Erreur : Téléchargement d'un identifiant inexistant -> Attendu : 404 Not Found
+GET {{baseUrl}}/api/attachments/999999/download
+Authorization: Bearer {{userToken}}
+
+
+### ==============================================================================
+### 6. TESTS DE SÉCURITÉ & CONTRÔLE D'ACCÈS RBAC (401 / 403)
+### ==============================================================================
+
+### 6.1 Erreur : Requête sans authentification (aucun Token) -> Attendu : 401 Unauthorized / 403 Forbidden
+GET {{baseUrl}}/api/tickets/1/attachments
+
+### 6.2 Erreur : Accès à un ticket dont l'utilisateur n'est pas propriétaire -> Attendu : 403 Forbidden
+# (Supposons que le ticket 99 appartient à un autre utilisateur)
+GET {{baseUrl}}/api/tickets/99/attachments
+Authorization: Bearer {{userToken}}
+
+### 6.3 Erreur : Tentative de suppression d'une pièce jointe par un autre utilisateur non-admin -> Attendu : 403 Forbidden
+# Si userToken tente de supprimer un fichier dont il n'est pas le créateur
+DELETE {{baseUrl}}/api/attachments/1
+Authorization: Bearer {{userToken}}
