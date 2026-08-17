@@ -18,6 +18,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,6 +29,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
 class TicketServiceTest {
@@ -198,9 +205,9 @@ class TicketServiceTest {
     @DisplayName("Tests pour la lecture de tickets (listTousTickets, listerTicketsParUtilisateur, getTicketById)")
     class LectureTicketsTests {
 
-        @Test
+        /*@Test
         @DisplayName("Devrait retourner la liste de tous les tickets")
-        void listTousTickets_RetourneListe() {
+         void listTousTickets_RetourneListe() {
             // Arrange
             Ticket ticket2 = Ticket.builder()
                     .id(101L)
@@ -232,6 +239,50 @@ class TicketServiceTest {
 
             // Assert
             assertThat(resultat).isEmpty();
+        } */
+
+        // au lieu de simuler ticketRepository.findAll() (sans argument) qui renvoie une List, on simule findAll(pageable) qui renvoie un Page<Ticket>
+        @Test
+        @DisplayName("Devrait retourner la liste paginée des tickets")
+        void listTousTickets_RetourneListe() {
+            // Arrange
+            Ticket ticket2 = Ticket.builder()
+                    .id(101L)
+                    .titre("Écran noir")
+                    .status(StatutTicket.EN_COURS)
+                    .createur(createur)
+                    .build();
+
+            Pageable pageable = PageRequest.of(0, 10);
+            Page<Ticket> pageTickets = new PageImpl<>(List.of(ticketSauvegarde, ticket2), pageable, 2);
+
+            when(ticketRepository.findAll(pageable)).thenReturn(pageTickets);
+
+            // Act
+            Page<TicketDTO> resultat = ticketService.listTousTickets(pageable);
+
+            // Assert
+            assertThat(resultat.getContent()).hasSize(2);
+            assertThat(resultat.getContent().get(0).getId()).isEqualTo(100L);
+            assertThat(resultat.getContent().get(1).getId()).isEqualTo(101L);
+            assertThat(resultat.getTotalElements()).isEqualTo(2);
+            verify(ticketRepository, times(1)).findAll(pageable);
+        }
+
+        @Test
+        @DisplayName("Devrait retourner une page vide s'il n'y a pas de tickets")
+        void listTousTickets_RetourneListeVide() {
+            // Arrange
+            Pageable pageable = PageRequest.of(0, 10);
+            Page<Ticket> pageVide = new PageImpl<>(List.of(), pageable, 0);
+
+            when(ticketRepository.findAll(pageable)).thenReturn(pageVide);
+
+            // Act
+            Page<TicketDTO> resultat = ticketService.listTousTickets(pageable);
+
+            // Assert
+            assertThat(resultat.getContent()).isEmpty();
         }
 
         @Test

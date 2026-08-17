@@ -9,6 +9,8 @@ import com.helpdesk.helpdeskbackend.repository.TicketRepository;
 import com.helpdesk.helpdeskbackend.repository.UserRepository;
 import com.helpdesk.helpdeskbackend.repository.CategorieRepository;
 import lombok.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -53,13 +55,18 @@ public class TicketService {
     }
 
 
-    @Transactional(readOnly = true)
+    /* @Transactional(readOnly = true)
     public List<TicketDTO> listTousTickets() {
         return ticketRepository
                 .findAll()
                 .stream()
                 .map(this::mapToDTO)
                 .toList();
+    } */
+
+    // listTousTickets() prend maintenant un Pageable et retourne un Page<TicketDTO>
+    public Page<TicketDTO> listTousTickets(Pageable pageable) {
+        return ticketRepository.findAll(pageable).map(this::mapToDTO);
     }
 
     @Transactional(readOnly = true)

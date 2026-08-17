@@ -5,6 +5,9 @@ import com.helpdesk.helpdeskbackend.entity.StatutTicket;
 import com.helpdesk.helpdeskbackend.service.TicketService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,10 +30,18 @@ public class TicketController {
         return new ResponseEntity<>(ticketService.creerTicket(ticketDTO, createurId), HttpStatus.CREATED);
     }
 
-    @GetMapping
+    /* @GetMapping
     public ResponseEntity<List<TicketDTO>> listerTousLesTickets() {
         return ResponseEntity.ok(ticketService.listTousTickets());
+    } */
+
+    // GET /api/tickets accepte maintenant page, size, sort en query params
+    @GetMapping
+    public ResponseEntity<Page<TicketDTO>> listerTousLesTickets(
+            @PageableDefault(size = 10, sort = "dateCreation") Pageable pageable) {
+        return ResponseEntity.ok(ticketService.listTousTickets(pageable));
     }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<TicketDTO> getTicketById(@PathVariable Long id) {

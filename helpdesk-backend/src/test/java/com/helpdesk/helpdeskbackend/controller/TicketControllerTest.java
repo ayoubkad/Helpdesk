@@ -13,6 +13,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -31,6 +33,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import static org.mockito.ArgumentMatchers.any;
 
 @ExtendWith(MockitoExtension.class)
 class TicketControllerTest {
@@ -112,7 +120,7 @@ class TicketControllerTest {
     @DisplayName("GET /api/tickets - Lister tous les tickets")
     class ListerTousLesTicketsControllerTests {
 
-        @Test
+        /* @Test
         @DisplayName("Devrait retourner HTTP 200 OK et la liste des tickets")
         void listerTousLesTickets_DevraitRetourner200EtListe() throws Exception {
             // Arrange
@@ -153,6 +161,56 @@ class TicketControllerTest {
                     .andExpect(jsonPath("$", hasSize(0)));
 
             verify(ticketService).listTousTickets();
+        } */
+
+        @Test
+        @DisplayName("Devrait retourner HTTP 200 OK et la liste paginée des tickets")
+        void listerTousLesTickets_DevraitRetourner200EtListe() throws Exception {
+            // Arrange
+            TicketDTO secondTicket = TicketDTO.builder()
+                    .id(2L)
+                    .titre("Écran cassé")
+                    .description("Écran fissuré après une chute")
+                    .status(StatutTicket.EN_COURS)
+                    .priorite(Priorite.MOYENNE)
+                    .createurId(11L)
+                    .build();
+
+            Pageable pageable = PageRequest.of(0, 10);
+            Page<TicketDTO> pageTickets = new PageImpl<>(List.of(ticketDTOResponse, secondTicket), pageable, 2);
+
+            when(ticketService.listTousTickets(any(Pageable.class))).thenReturn(pageTickets); // any(Pageable.class) dit à Mockito "peu importe quel Pageable est passé, retourne ce résultat"
+            // Le vrai changement côté JSON : avant, la réponse était un tableau brut [...], donc $ pointait directement dessus ($[0].id). Maintenant c'est un objet paginé, donc il faut viser $.content[0].id et non plus $[0].id.
+            // Act & Assert
+            mockMvc.perform(get("/api/tickets")
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.content", hasSize(2)))
+                    .andExpect(jsonPath("$.content[0].id", is(1)))
+                    .andExpect(jsonPath("$.content[0].titre", is("Problème d'impression")))
+                    .andExpect(jsonPath("$.content[1].id", is(2)))
+                    .andExpect(jsonPath("$.content[1].titre", is("Écran cassé")))
+                    .andExpect(jsonPath("$.totalElements", is(2)));
+
+            verify(ticketService).listTousTickets(any(Pageable.class));
+        }
+
+        @Test
+        @DisplayName("Devrait retourner HTTP 200 OK et une page vide si aucun ticket n'existe")
+        void listerTousLesTickets_DevraitRetourner200EtListeVide() throws Exception {
+            // Arrange
+            Pageable pageable = PageRequest.of(0, 10);
+            Page<TicketDTO> pageVide = new PageImpl<>(List.of(), pageable, 0);
+
+            when(ticketService.listTousTickets(any(Pageable.class))).thenReturn(pageVide);
+
+            // Act & Assert
+            mockMvc.perform(get("/api/tickets")
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.content", hasSize(0)));
+
+            verify(ticketService).listTousTickets(any(Pageable.class));
         }
     }
 
