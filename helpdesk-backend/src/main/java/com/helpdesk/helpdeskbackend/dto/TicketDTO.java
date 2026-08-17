@@ -1,7 +1,6 @@
 package com.helpdesk.helpdeskbackend.dto;
 
 import com.helpdesk.helpdeskbackend.entity.Priorite;
-import jdk.jfr.DataAmount;
 import lombok.*;
 import com.helpdesk.helpdeskbackend.entity.StatutTicket;
 
@@ -26,5 +25,5 @@ public class TicketDTO {
     private Long createurId;
     private Long technicienId;
     private Long categorieId;
-
+    private String categorieNom;
 }

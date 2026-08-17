@@ -137,7 +137,7 @@ public class TicketService {
                 .createurId(ticket.getCreateur() != null ? ticket.getCreateur().getId() : null)
                 .technicienId(ticket.getTechnicien() != null ? ticket.getTechnicien().getId() : null)
                 .categorieId(ticket.getCategorie() != null ? ticket.getCategorie().getId() : null)
+                .categorieNom(ticket.getCategorie() != null ? ticket.getCategorie().getNom() : null)
                 .build();
     }
-
 }

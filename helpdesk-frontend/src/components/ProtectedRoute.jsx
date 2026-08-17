@@ -2,7 +2,7 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "../Context/AuthContext";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
-    const { isAuthenticated, user, userRole } = useAuth();
+    const { isAuthenticated, userRole } = useAuth();
 
     // ===== 1. PAS CONNECTÉ =====
     if (!isAuthenticated) {
