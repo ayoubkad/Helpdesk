@@ -6,57 +6,68 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import CreateTicket from './pages/CreateTicket';
 import TechnicianDashboard from './pages/TechnicianDashboard';
-
+import AdminDashboard from './pages/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
+import { AuthProvider } from './context/AuthContext';
 
 import './App.css';
 
 function App() {
   return (
-    <BrowserRouter>
-      <div className="min-h-screen bg-slate-50">
-        <Routes>
+    <AuthProvider>
+      <BrowserRouter>
+        <div className="min-h-screen bg-slate-50">
+          <Routes>
+            {/* Routes publiques */}
+            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login />} />
 
-          {/* Routes publiques */}
-          <Route path="/register" element={<Register />} />
-          <Route path="/login" element={<Login />} />
+            {/* Dashboard USER */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute allowedRoles={["USER"]}>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Dashboard USER */}
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute allowedRoles={["USER"]}>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
+            {/* Dashboard TECHNICIEN */}
+            <Route
+              path="/technician"
+              element={
+                <ProtectedRoute allowedRoles={["TECHNICIEN"]}>
+                  <TechnicianDashboard />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Dashboard TECHNICIEN */}
-          <Route
-            path="/technician"
-            element={
-              <ProtectedRoute allowedRoles={["TECHNICIEN"]}>
-                <TechnicianDashboard />
-              </ProtectedRoute>
-            }
-          />
+            {/* Création de ticket - USER */}
+            <Route
+              path="/create-ticket"
+              element={
+                <ProtectedRoute allowedRoles={["USER"]}>
+                  <CreateTicket />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Création de ticket - USER */}
-          <Route
-            path="/create-ticket"
-            element={
-              <ProtectedRoute allowedRoles={["USER"]}>
-                <CreateTicket />
-              </ProtectedRoute>
-            }
-          />
+            {/* Dashboard ADMIN */}
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute allowedRoles={["ADMIN"]}>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Route inconnue */}
-          <Route path="*" element={<Navigate to="/login" replace />} />
-
-        </Routes>
-      </div>
-    </BrowserRouter>
+            {/* Route inconnue */}
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </Routes>
+        </div>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 
